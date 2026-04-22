@@ -74,6 +74,7 @@
 
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
+- For **map, pins, or location data**: what happens for invalid, missing, or out-of-bounds coordinates; unclear geolocation permission; or empty result sets on the map?
 
 ## Requirements *(mandatory)*
 

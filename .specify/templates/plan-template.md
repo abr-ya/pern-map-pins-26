@@ -31,7 +31,13 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Verify alignment with `.specify/memory/constitution.md` (see **React Express Map Pins Constitution**). Checklist:
+
+- **Full-stack boundaries**: React and Express roles are clear; server is authoritative for pin/location correctness unless a documented exception applies.
+- **Geospatial and data integrity**: Pin/location validation, error handling for bad coordinates, and rounding/CRS assumptions are covered in the spec or this plan.
+- **Testable delivery**: API tests are planned for new or changed Express routes and core pin logic; client test strategy is stated (unit/component/e2e as appropriate).
+- **API contracts**: Public request/response shapes are listed under `contracts/` (or equivalent); breaking changes are called out with migration notes.
+- **Operability**: Logging and user-visible error handling for the server; unjustified complexity is listed in [Complexity Tracking](#complexity-tracking) below.
 
 ## Project Structure
 

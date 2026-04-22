@@ -1,50 +1,52 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  Sync Impact Report
+  - Version change: (template placeholders) → 1.0.0
+  - Modified principles: N/A (initial adoption; placeholders → named principles I–V)
+  - Added sections: Technology & Stack, Development Workflow (replacing [SECTION_2_NAME], [SECTION_3_NAME] placeholders)
+  - Removed sections: None
+  - Templates: .specify/templates/plan-template.md ✅ | spec-template.md ✅ | tasks-template.md ✅
+  - Command files: .specify/templates/commands/*.md — not present in repo; extension commands reviewed separately
+  - Follow-up TODOs: None
+-->
+# React Express Map Pins Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Full-Stack Boundaries
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+The user interface is implemented in **React**; HTTP APIs and server-side behavior run on **Node.js** with **Express**. Domain rules that affect data correctness MUST live in one authoritative layer (typically the server) unless a documented exception explains safe duplication. Cross-origin, environment, and build-time configuration MUST be explicit for development versus production. Rationale: clear boundaries keep map and pin state consistent and simplify debugging.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. Geospatial and Data Integrity
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Pin and location data** (coordinates, optional metadata) MUST be validated at system boundaries. Invalid or out-of-range inputs MUST be rejected with clear errors; the project MUST not silently corrupt or round coordinates in ways that change meaning without documentation. Rationale: map applications depend on trustworthy geography; bugs here are high-impact for users and downstream systems.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. Testable Delivery
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Automated tests** are mandatory for the Express API that exposes pin and map-related behavior: new or changed routes and domain logic require tests that fail first when behavior is wrong. The React client MUST have a testing strategy in each plan (unit and/or component tests, and targeted end-to-end tests when critical paths warrant them). Rationale: regressions in CRUD, validation, and map integration are too costly to catch only by hand.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. API Contracts and Stability
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+The HTTP API is contract-first: request and response shapes for public endpoints are captured under `specs/.../contracts/` (or equivalent) as the feature plan defines. **Breaking** changes to JSON fields, status codes, or URL paths require a version bump, client migration notes, and explicit tracking in the implementation plan. Rationale: decoupled React and Express teams (or future clients) need predictable integration points.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Operability and Simplicity
+
+The server MUST use **structured, readable logging** for errors and important lifecycle events. User-visible failures on the client MUST be explainable in plain language where feasible. Unnecessary complexity (extra services, abstractions, or dependencies) requires justification in the plan’s **Complexity Tracking** section. Rationale: map apps generate varied runtime conditions; operability and YAGNI keep the system maintainable.
+
+## Technology & Stack
+
+- **Client**: React (TypeScript when the project adopts it; align with `plan.md` Technical Context).
+- **Server**: Node.js, Express, documented REST/JSON API.
+- **Maps**: The concrete map library or provider (e.g., Leaflet, Mapbox) is selected per feature plan and recorded in `plan.md`; geospatial behavior MUST follow Principle II.
+- **Persistence**: Databases, files, or external stores are specified per plan; no implicit global state for pins across deployments.
+
+## Development Workflow
+
+- Features use the **Spec Kit** pipeline: **specify** → **plan** → **tasks** → **implement**, with `specs/[###-feature-name]/` as the source of truth for scope.
+- **Constitution Check** in `plan.md` (before Phase 0 and after Phase 1) MUST be satisfied or violations documented in **Complexity Tracking** with a simpler alternative and rationale.
+- Work proceeds on **feature branches**; commits SHOULD be small and message conventional enough for reviewers to follow history (see project Git conventions when documented in `README.md`).
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes ad-hoc practices for this repository when they conflict. **Amendments** MUST update `.specify/memory/constitution.md`, bump **CONSTITUTION_VERSION** per semantic versioning (MAJOR: incompatible governance or removed principles; MINOR: new principle or material new guidance; PATCH: clarifications and non-semantic edits), and set **Last Amended** to the ISO date of the change. **Ratification** date records original adoption. Pull requests and design reviews SHOULD verify that plans and major changes align with the Core Principles; recurring violations trigger a governance review. Day-to-day development may also reference `.cursor/rules/specify-rules.mdc` and the active feature `plan.md` for context.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-04-22 | **Last Amended**: 2026-04-22
