@@ -1,0 +1,12 @@
+// Domain models: Phase 2 (T007) per specs/001-map-world-points/data-model.md
+// Prisma ORM 7: `prisma-client` generator; output under src/generated — https://pris.ly/d/prisma7
+// DATABASE_URL for Migrate/CLI: ../prisma.config.ts (not in this file) — https://pris.ly/d/config-datasource
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

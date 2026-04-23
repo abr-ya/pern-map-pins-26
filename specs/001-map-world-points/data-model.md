@@ -123,9 +123,9 @@ Index: `point_id` for thread load order `created_at`.
 
 ## Migrations
 
-- Use **Drizzle Kit** or **Prisma Migrate**; single linear migration chain to Neon.
+- Use **Prisma ORM 7** + **Prisma Migrate**; single linear migration chain to Neon. Connection URL for `migrate` / `db push` lives in **`backend/prisma.config.ts`** (not in `schema.prisma`); schema and migrations under `backend/prisma/`.
 - **Seed**: optional dev users/groups (not in production path).
 
-## Validation (Zod) — field-level
+## Validation (Zod 4) — field-level
 
 Mirror rules in [contracts/openapi.yaml](./contracts/openapi.yaml) and Express middleware for every write.

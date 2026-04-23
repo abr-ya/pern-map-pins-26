@@ -7,7 +7,7 @@
 
 Deliver a **map-first web app** where guests see the **latest five** public points and matching map markers; **signed-in** users create **points** (WGS84 coordinates, title, optional description, **one** photo), organize with **folders** and **tags**, share **public** content, participate in **private groups** (with an **active group switcher**), use **favorites** with subfolders, and engage via **comments** and **1–5 ratings**.  
 
-**Approach**: **Split deploy** — Vite + **React** SPA in `frontend/`, **Express** API in `backend/`, both **TypeScript**; **Neon PostgreSQL** as source of truth; **Clerk** for email/password + Google; **Cloudflare R2** (S3-compatible) for **photo** storage via presigned uploads; **Leaflet** + **react-leaflet** with **OpenStreetMap** tiles for the map; **Swagger** (OpenAPI 3) served from the API. Validation at boundaries with **Zod** (shared or mirrored schemas); geospatial input validated in Express (lat ∈ [-90,90], lng ∈ [-180,180], SRID **WGS84** for stored coordinates).
+**Approach**: **Split deploy** — Vite + **React** SPA in `frontend/`, **Express** API in `backend/`, both **TypeScript**; **Neon PostgreSQL** as source of truth; **Clerk** for email/password + Google; **Cloudflare R2** (S3-compatible) for **photo** storage via presigned uploads; **Leaflet** + **react-leaflet** with **OpenStreetMap** tiles for the map; **Swagger** (OpenAPI 3) served from the API. Validation at boundaries with **Zod 4** (shared or mirrored schemas); geospatial input validated in Express (lat ∈ [-90,90], lng ∈ [-180,180], SRID **WGS84** for stored coordinates).
 
 **Phase 0–1 outputs**: [research.md](./research.md) (decisions), [data-model.md](./data-model.md) (schema), [contracts/openapi.yaml](./contracts/openapi.yaml) (API contract), [quickstart.md](./quickstart.md) (local run).
 
@@ -15,8 +15,8 @@ Deliver a **map-first web app** where guests see the **latest five** public poin
 
 **Language/Version**: TypeScript 5.x (strict) on **Node.js 20 LTS** (frontend and backend).  
 **Primary Dependencies**:
-- **Frontend**: React 18+, Vite, **Tailwind CSS**, **shadcn/ui** (Radix), **react-hook-form** + **Zod**, **TanStack Query** v5, **react-dropzone** (photo pick), **react-leaflet** + **Leaflet**, **Clerk** React SDK
-- **Backend**: **Express** 4.x, **Zod** (request validation), **Prisma** or **Drizzle** ORM (TBD in tasks; default assumption **Drizzle** for lightweight SQL), **@clerk/express** (or verify JWT via Clerk), **swagger-ui-express** + **OpenAPI** spec file, **@aws-sdk/client-s3** (R2), **pino** or **winston** (structured logs)
+- **Frontend**: **React 19**, Vite, **Tailwind CSS 4** (`@tailwindcss/vite`), **shadcn/ui** (Radix), **react-hook-form** + **@hookform/resolvers** + **Zod 4**, **TanStack Query** v5, **react-dropzone** (photo pick), **react-leaflet** + **Leaflet**, **Clerk** (`@clerk/react`)
+- **Backend**: **Express 5.x**, **Zod 4** (request validation), **Prisma ORM 7** with **Prisma Migrate** to Neon (connection URL in `prisma.config.ts`, not in `schema.prisma`; `PrismaClient` with driver adapter in app code), **@clerk/express** (or verify JWT via Clerk), **swagger-ui-express** + **OpenAPI** spec file, **@aws-sdk/client-s3** (R2), **pino** or **winston** (structured logs)
 
 **Storage**: **Neon** **PostgreSQL** 15+ (connection string; optional **PostGIS** later for heavy geo queries; **v1** uses `double precision` lat/lng + app validation per constitution).  
 **Object storage**: **Cloudflare R2** (S3 API, public or signed read URLs for images).  
@@ -110,7 +110,7 @@ All decisions are recorded in [research.md](./research.md). Highlights:
 | Object storage | **Cloudflare R2** (S3 API, no vendor lock-in for client code) |
 | Map | **react-leaflet** + **OSM** tiles; marker clustering in UI for density |
 | API docs | **OpenAPI 3** + **Swagger UI** on `/api/docs` in dev/staging (guard in prod) |
-| ORM | **Drizzle** (recommended) or **Prisma** — pick one in implementation tasks |
+| ORM | **Prisma ORM 7** + **Prisma Migrate** + `@prisma/adapter-pg` / `pg` (Drizzle was not adopted) |
 | Monorepo tooling | `pnpm` workspaces (recommended) or npm — tasks |
 
 ## Phase 1: Design (complete)

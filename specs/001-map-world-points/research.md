@@ -69,9 +69,13 @@
 
 ## 5. ORM
 
-**Decision (recommended): Drizzle ORM** with `drizzle-kit` migrations to Neon.
+**Decision (in use in repo): Prisma ORM 7** with **Prisma Migrate** to Neon.
 
-**Rationale**: Thin SQL, TypeScript-first, good for **Postgres**; team can choose **Prisma** in tasks if preferred.
+- **Schema**: `backend/prisma/schema.prisma` — models; `datasource db { provider = "postgresql" }` only (no `url` in schema; [Prisma 7](https://pris.ly/d/config-datasource)).
+- **CLI / migrations URL**: `backend/prisma.config.ts` — `datasource.url` from `DATABASE_URL` (after `dotenv/config` in that file).
+- **Runtime**: `backend/src/lib/prisma.ts` — `PrismaClient` with **`@prisma/adapter-pg`** + `pg` ([client + adapter](https://pris.ly/d/prisma7-client-config)).
+
+*Earlier note: Drizzle was considered; this repo uses **Prisma 7**.*
 
 ---
 

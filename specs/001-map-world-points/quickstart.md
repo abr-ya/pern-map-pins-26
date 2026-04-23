@@ -37,9 +37,14 @@ pnpm install
 
 ## 3. Database
 
+**Prisma ORM 7**: the DB URL for **CLI** (migrate, db push, studio) is set in **`backend/prisma.config.ts`** from `DATABASE_URL`. Put `DATABASE_URL` in **`backend/.env`** (Neon pooled string is fine). The **runtime** app uses `PrismaClient` with **`@prisma/adapter-pg`** — see `backend/src/lib/prisma.ts`.
+
 ```bash
 cd backend
-pnpm run db:migrate   # to be added when ORM is wired
+pnpm run db:generate  # prisma generate (uses prisma.config.ts)
+# After models exist (Phase 2): create/apply migrations with DATABASE_URL set
+pnpm run db:migrate:dev   # local: prisma migrate dev
+# pnpm run db:migrate     # CI/prod: prisma migrate deploy
 ```
 
 ## 4. Run

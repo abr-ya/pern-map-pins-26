@@ -23,11 +23,11 @@
 
 **Purpose**: Monorepo scaffold and toolchain so `backend/` and `frontend/` are buildable and runnable.
 
-- [ ] T001 Create pnpm workspace with root `package.json` and `pnpm-workspace.yaml` including `frontend` and `backend` at repository root
-- [ ] T002 [P] Initialize `backend/package.json` with TypeScript, Express, `tsx`, Vitest, Supertest, Drizzle ORM, Drizzle Kit, Zod, `pino`, `cors`, `@clerk/express`, and `@aws-sdk/client-s3` for R2; add `backend/vitest.config.ts` and `test` / `test:watch` scripts suitable for `backend/tests/`
-- [ ] T003 [P] Initialize `frontend/package.json` with Vite, React, TypeScript, Tailwind CSS, TanStack Query v5, `@clerk/clerk-react`, `react-leaflet`, `leaflet`, `react-hook-form`, and Zod; add `frontend/vitest.config.ts` (or Vite `test` with Vitest) and `jsdom` for Testing Library, plus `test` script
-- [ ] T004 [P] Add strict `tsconfig.json` for `backend/tsconfig.json` and `frontend/tsconfig.json` with project references or root `tsconfig.json` as needed
-- [ ] T005 [P] Add ESLint (and Prettier if desired) config at `eslint.config.mjs` or equivalent at repository root
+- [X] T001 Create pnpm workspace with root `package.json` and `pnpm-workspace.yaml` including `frontend` and `backend` at repository root
+- [X] T002 [P] Initialize `backend/package.json` with TypeScript, **Express 5** (`express@^5`), `tsx`, Vitest, Supertest, **Prisma** (`@prisma/client`, `prisma` CLI), **Zod 4**, `pino`, `cors`, `@clerk/express`, and `@aws-sdk/client-s3` for R2; add `backend/vitest.config.ts` and `test` / `test:watch` scripts suitable for `backend/tests/`
+- [X] T003 [P] Initialize `frontend/package.json` with Vite, React, TypeScript, **Tailwind CSS 4**, TanStack Query v5, `@clerk/react`, `react-leaflet`, `leaflet`, `react-hook-form`, `@hookform/resolvers`, and **Zod 4**; add `frontend/vitest.config.ts` (or Vite `test` with Vitest) and `jsdom` for Testing Library, plus `test` script
+- [X] T004 [P] Add strict `tsconfig.json` for `backend/tsconfig.json` and `frontend/tsconfig.json` with project references or root `tsconfig.json` as needed
+- [X] T005 [P] Add ESLint (and Prettier if desired) config at `eslint.config.mjs` or equivalent at repository root
 
 ---
 
@@ -37,11 +37,11 @@
 
 **⚠️ CRITICAL**: No user story implementation until this phase is complete (except that Phase 1 must finish first).
 
-- [ ] T006 Add Drizzle configuration in `backend/drizzle.config.ts` using `DATABASE_URL` for Neon
-- [ ] T007 Define PostgreSQL schema in `backend/src/db/schema.ts` per `specs/001-map-world-points/data-model.md` (users, groups, group_members, user_preferences, folders, points, tags, point_tags, favorite_folders, favorites, comments, ratings)
-- [ ] T008 Generate initial SQL migration under `backend/drizzle/` with `drizzle-kit` and add `db:migrate` / `db:generate` scripts to `backend/package.json`
-- [ ] T009 Wire database client in `backend/src/db/index.ts` (Neon/pooled connection)
-- [ ] T010 Create Express application entry in `backend/src/index.ts` registering CORS for `FRONTEND_URL`, JSON body parser, request-id middleware, and global error handler in `backend/src/middleware/errorHandler.ts` returning contract-shaped errors (`code`, `message`) per `specs/001-map-world-points/contracts/openapi.yaml`
+- [X] T006 **Prisma ORM 7**: `backend/prisma/schema.prisma` — `datasource db { provider = "postgresql" }` only (no `url` in schema; [Prisma 7 config](https://pris.ly/d/config-datasource)). `backend/prisma.config.ts` — `datasource.url` from `process.env.DATABASE_URL` after `import 'dotenv/config'`; `migrations.path`; scripts `db:generate` / `db:migrate` / `db:migrate:dev` in `backend/package.json`
+- [ ] T007 Define all models and relations in `backend/prisma/schema.prisma` per `specs/001-map-world-points/data-model.md` (User, Group, GroupMember, UserPreference, Folder, Point, Tag, PointTag, FavoriteFolder, Favorite, Comment, Rating)
+- [ ] T008 Create initial migration with `prisma migrate dev` from `backend/` (loads `prisma.config.ts` automatically) or `prisma migrate diff` + commit so `backend/prisma/migrations/` has `0001_*` SQL for Neon; document `db:migrate` / `db:migrate:dev` in `backend/package.json`
+- [X] T009 `backend/src/lib/prisma.ts`: **singleton** `PrismaClient` with **`@prisma/adapter-pg` + `pg` `Pool`** and `globalThis` cache in dev ([runtime client](https://pris.ly/d/prisma7-client-config)); wire or re-export from `backend/src/index.ts` / `backend/src/db/index.ts` when the app starts
+- [ ] T010 **Express 5** application entry in `backend/src/index.ts` registering CORS for `FRONTEND_URL`, JSON body parser, request-id middleware, and global error handler in `backend/src/middleware/errorHandler.ts` returning contract-shaped errors (`code`, `message`) per `specs/001-map-world-points/contracts/openapi.yaml` (see [Express 5 migration](https://expressjs.com/en/guide/migrating-5.html) if upgrading patterns)
 - [ ] T011 [P] Add structured JSON logging in `backend/src/lib/logger.ts` and request logging middleware in `backend/src/middleware/requestLogger.ts`
 - [ ] T012 [P] Add WGS84 validation helpers in `backend/src/lib/geo.ts` (latitude ∈ [-90,90], longitude ∈ [-180,180]) for reuse on all point writes
 - [ ] T013 Mount `GET /api/health` in `backend/src/routes/health.ts` and register with the app per `specs/001-map-world-points/contracts/openapi.yaml` `/health`
@@ -95,7 +95,7 @@
 
 - [ ] T034 [P] [US2] Add `backend/tests/integration/auth.protected.test.ts` with Supertest: a protected sample route (or `POST /api/points` after stub) returns **401/403** when `Authorization` is missing/invalid, using Clerk test doubles or mock JWT as documented for Vitest
 - [ ] T035 [P] [US2] Add `backend/tests/integration/webhooks.clerk.test.ts` with Supertest: `POST` webhook with valid `svix`/`CLERK` signature body creates/updates `users`; invalid signature returns **4xx** without DB writes
-- [ ] T036 [P] [US2] Add `frontend/src/components/AppHeader.test.tsx` (Vitest + Testing Library) with `@clerk/clerk-react` test helpers: signed-out vs signed-in render paths
+- [ ] T036 [P] [US2] Add `frontend/src/components/AppHeader.test.tsx` (Vitest + Testing Library) with `@clerk/react` test helpers: signed-out vs signed-in render paths
 
 **Checkpoint**: Auth works end-to-end; internal `users` rows align with Clerk ids for subsequent stories; US2 test suite green
 
@@ -182,7 +182,7 @@
 - [ ] T069 [P] Walk through `specs/001-map-world-points/quickstart.md` and fix gaps in `backend/package.json` / `frontend/package.json` scripts so `pnpm install`, migrate, and two-server dev run match the doc
 - [ ] T070 Harden `backend/src/routes/docs.ts` and env-based toggles in `backend/src/index.ts` for production (disable or protect Swagger) per [plan.md](./plan.md) and `.specify/memory/constitution.md`
 - [ ] T071 [P] Add top-level `README.md` with pointer to `specs/001-map-world-points/plan.md` and how to run frontend/backend
-- [ ] T072 Verify partial indexes and constraints in `backend/drizzle/` match “latest five” and FK rules in [data-model.md](./data-model.md) (add follow-up migration in `backend/drizzle/` if anything was deferred)
+- [ ] T072 Verify partial indexes and constraints in `backend/prisma/migrations` (or `@@index` in `schema.prisma`) match “latest five” and FK rules in [data-model.md](./data-model.md) (add follow-up Prisma migration if anything was deferred)
 
 ---
 
