@@ -17,4 +17,63 @@ import * as Prisma from './internal/prismaNamespaceBrowser.js'
 export { Prisma }
 export * as $Enums from './enums.js'
 export * from './enums.js';
-
+/**
+ * Model User
+ * 
+ */
+export type User = Prisma.UserModel
+/**
+ * Model Group
+ * 
+ */
+export type Group = Prisma.GroupModel
+/**
+ * Model GroupMember
+ * 
+ */
+export type GroupMember = Prisma.GroupMemberModel
+/**
+ * Model UserPreference
+ * Active private group: null = "public only" for private layer.
+ */
+export type UserPreference = Prisma.UserPreferenceModel
+/**
+ * Model Folder
+ * Personal vs group-scoped organization folder.
+ */
+export type Folder = Prisma.FolderModel
+/**
+ * Model Point
+ * 
+ */
+export type Point = Prisma.PointModel
+/**
+ * Model Tag
+ * 
+ */
+export type Tag = Prisma.TagModel
+/**
+ * Model PointTag
+ * 
+ */
+export type PointTag = Prisma.PointTagModel
+/**
+ * Model FavoriteFolder
+ * 
+ */
+export type FavoriteFolder = Prisma.FavoriteFolderModel
+/**
+ * Model Favorite
+ * 
+ */
+export type Favorite = Prisma.FavoriteModel
+/**
+ * Model Comment
+ * 
+ */
+export type Comment = Prisma.CommentModel
+/**
+ * Model Rating
+ * 
+ */
+export type Rating = Prisma.RatingModel

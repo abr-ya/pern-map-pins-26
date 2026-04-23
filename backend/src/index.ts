@@ -1,4 +1,10 @@
-/**
- * Replaced in Phase 2 (T010) with the Express app entry. Placeholder for Phase 1 layout.
- */
-export const phase = 1;
+import 'dotenv/config';
+import { createApp } from './app.js';
+import { logger } from './lib/logger.js';
+
+const port = Number.parseInt(process.env.PORT ?? '3000', 10);
+const app = createApp();
+
+app.listen(port, () => {
+  logger.info({ port }, 'API listening');
+});

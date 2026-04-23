@@ -20,10 +20,17 @@ pnpm install
 
 ## 2. Environment variables
 
+Create local env files (never commit `.env`):
+
+```bash
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
+
 ### `backend/.env`
 
 - `NODE_ENV=development`
-- `DATABASE_URL=` — Neon connection string (pooled)
+- `DATABASE_URL=` — remote PostgreSQL connection string (e.g. **Neon** from the dashboard: pooled or direct; `?sslmode=require` is typical)
 - `CLERK_SECRET_KEY=`
 - `CLERK_PUBLISHABLE_KEY=` (for any server-side use)
 - `CLERK_WEBHOOK_SECRET=` — if using webhooks to sync `users`
@@ -33,7 +40,7 @@ pnpm install
 ### `frontend/.env`
 
 - `VITE_CLERK_PUBLISHABLE_KEY=`
-- `VITE_API_URL=http://localhost:3000` (or your API port)
+- `VITE_API_URL=http://localhost:3000` (or your API origin; no trailing slash)
 
 ## 3. Database
 

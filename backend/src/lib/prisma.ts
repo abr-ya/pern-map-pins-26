@@ -1,6 +1,7 @@
+import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client.js';
-import pg from 'pg';
+import { Pool } from 'pg';
 
 /**
  * Prisma 7: pass a driver adapter (e.g. `pg` pool). Singleton for dev HMR.
@@ -11,7 +12,7 @@ function createPrisma(): PrismaClient {
   if (!url) {
     throw new Error('DATABASE_URL is not set (required for PrismaClient + pg adapter)');
   }
-  const pool = new pg.Pool({ connectionString: url });
+  const pool = new Pool({ connectionString: url });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 }

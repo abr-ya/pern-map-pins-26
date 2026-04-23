@@ -1,6 +1,5 @@
 // Domain models: Phase 2 (T007) per specs/001-map-world-points/data-model.md
-// Prisma ORM 7: `prisma-client` generator; output under src/generated — https://pris.ly/d/prisma7
-// DATABASE_URL for Migrate/CLI: ../prisma.config.ts (not in this file) — https://pris.ly/d/config-datasource
+// Prisma ORM 7 — https://pris.ly/d/prisma7
 
 generator client {
   provider = "prisma-client"
@@ -9,4 +8,184 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum PointVisibility {
+  public
+  group_only
+}
+
+model User {
+  id          String   @id @default(uuid()) @db.Uuid
+  clerkId     String   @unique @map("clerk_id")
+  displayName String   @map("display_name")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  groupMemberships GroupMember[]
+  preference       UserPreference?
+  folders          Folder[]
+  points           Point[]
+  tags             Tag[]
+  comments         Comment[]
+  ratings          Rating[]
+  favorites        Favorite[]
+  favoriteFolders  FavoriteFolder[]
+
+  @@map("users")
+}
+
+model Group {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  members            GroupMember[]
+  points             Point[]
+  folders            Folder[]
+  activeInPreferences UserPreference[] @relation("ActiveGroup")
+
+  @@map("groups")
+}
+
+model GroupMember {
+  groupId String @map("group_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId], map: "group_members_user_id_idx")
+  @@map("group_members")
+}
+
+/// Active private group: null = "public only" for private layer.
+model UserPreference {
+  userId         String  @id @map("user_id") @db.Uuid
+  activeGroupId  String? @map("active_group_id") @db.Uuid
+
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeGroup Group? @relation("ActiveGroup", fields: [activeGroupId], references: [id], onDelete: SetNull)
+
+  @@map("user_preferences")
+}
+
+/// Personal vs group-scoped organization folder.
+model Folder {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  groupId   String?  @map("group_id") @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  points Point[]
+
+  @@index([userId], map: "folders_user_id_idx")
+  @@map("folders")
+}
+
+model Point {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @map("user_id") @db.Uuid
+  folderId    String?         @map("folder_id") @db.Uuid
+  groupId     String?         @map("group_id") @db.Uuid
+  visibility  PointVisibility @default(public)
+  title       String
+  description String?
+  photoKey    String?         @map("photo_key")
+  latitude    Float           @db.DoublePrecision
+  longitude   Float           @db.DoublePrecision
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder   Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  group    Group?   @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  pointTags PointTag[]
+  comments  Comment[]
+  ratings   Rating[]
+  favorites Favorite[]
+
+  /// Guest “latest five” and list queries (public, not group-only on map).
+  @@index([visibility, createdAt(sort: Desc)], map: "points_visibility_created_at_idx")
+  @@map("points")
+}
+
+model Tag {
+  id     String  @id @default(uuid()) @db.Uuid
+  name   String
+  userId String? @map("user_id") @db.Uuid
+
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pointTags PointTag[]
+
+  @@map("tags")
+}
+
+model PointTag {
+  pointId String @map("point_id") @db.Uuid
+  tagId   String @map("tag_id") @db.Uuid
+
+  point Point @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([pointId, tagId])
+  @@map("point_tags")
+}
+
+model FavoriteFolder {
+  id       String  @id @default(uuid()) @db.Uuid
+  userId   String  @map("user_id") @db.Uuid
+  name     String
+  parentId String? @map("parent_id") @db.Uuid
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   FavoriteFolder?  @relation("FavoriteFolderTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children FavoriteFolder[] @relation("FavoriteFolderTree")
+  favorites Favorite[]
+
+  @@index([userId], map: "favorite_folders_user_id_idx")
+  @@map("favorite_folders")
+}
+
+model Favorite {
+  userId            String  @map("user_id") @db.Uuid
+  pointId           String  @map("point_id") @db.Uuid
+  favoriteFolderId  String? @map("favorite_folder_id") @db.Uuid
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  point           Point           @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  favoriteFolder  FavoriteFolder? @relation(fields: [favoriteFolderId], references: [id], onDelete: SetNull)
+
+  @@id([userId, pointId])
+  @@map("favorites")
+}
+
+model Comment {
+  id        String   @id @default(uuid()) @db.Uuid
+  pointId   String   @map("point_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  point Point @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([pointId, createdAt(sort: Asc)], map: "comments_point_id_created_at_idx")
+  @@map("comments")
+}
+
+model Rating {
+  userId    String   @map("user_id") @db.Uuid
+  pointId   String   @map("point_id") @db.Uuid
+  value     Int      @db.SmallInt
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  point Point @relation(fields: [pointId], references: [id], onDelete: Cascade)
+
+  @@id([userId, pointId])
+  @@map("ratings")
 }

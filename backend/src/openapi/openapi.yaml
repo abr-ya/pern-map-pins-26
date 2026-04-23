@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Points on the Map API
+  version: 0.1.0
+  description: >
+    Express REST API for 001-map-world-points. All authenticated routes
+    require Clerk-issued session or Bearer token (per deployment).
+servers:
+  - url: /api
+    description: API base (adjust per gateway)
+
+tags:
+  - name: public
+  - name: points
+  - name: me
+  - name: meta
+
+components:
+  securitySchemes:
+    clerkBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk session JWT
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: VALIDATION_ERROR }
+        message: { type: string }
+        details: { type: object, additionalProperties: true }
+
+    Point:
+      type: object
+      required: [id, title, latitude, longitude, createdAt, visibility]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        photoUrl: { type: string, format: uri, nullable: true }
+        latitude: { type: number, format: double, minimum: -90, maximum: 90 }
+        longitude: { type: number, format: double, minimum: -180, maximum: 180 }
+        createdAt: { type: string, format: date-time }
+        authorId: { type: string, format: uuid }
+        visibility: { type: string, enum: [public, group_only] }
+        groupId: { type: string, format: uuid, nullable: true }
+        folderId: { type: string, format: uuid, nullable: true }
+        averageRating: { type: number, nullable: true }
+        myRating: { type: integer, minimum: 1, maximum: 5, nullable: true }
+
+    PointCreate:
+      type: object
+      required: [title, latitude, longitude]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 5000, nullable: true }
+        latitude: { type: number, format: double, minimum: -90, maximum: 90 }
+        longitude: { type: number, format: double, minimum: -180, maximum: 180 }
+        folderId: { type: string, format: uuid, nullable: true }
+        visibility: { type: string, enum: [public, group_only], default: public }
+        groupId: { type: string, format: uuid, nullable: true }
+        tagIds: { type: array, items: { type: string, format: uuid } }
+
+    Comment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        body: { type: string, maxLength: 4000 }
+        authorId: { type: string, format: uuid }
+        displayName: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    PhotoUpload:
+      type: object
+      required: [uploadUrl, photoKey, expiresAt]
+      properties:
+        uploadUrl: { type: string, format: uri, description: Presigned PUT URL (R2) }
+        photoKey: { type: string, description: Key to store on point after upload }
+        expiresAt: { type: string, format: date-time }
+
+paths:
+  /health:
+    get:
+      tags: [meta]
+      summary: Liveness
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
+  /public/latest:
+    get:
+      tags: [public]
+      summary: Latest five public points (guest + signed-in list widget)
+      responses:
+        '200':
+          description: Up to 5 public points, newest first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Point' } }
+
+  /public/points/{pointId}:
+    get:
+      tags: [public]
+      summary: Public point read-only detail (guest or signed-in)
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Point'
+        '404': { description: Not found or not visible }
+
+  /map/public:
+    get:
+      tags: [public]
+      summary: Public points in bounding box (signed-in; guest uses latest subset client-side)
+      security: [{ clerkBearer: [] }]
+      parameters:
+        - in: query
+          name: southWestLat
+          schema: { type: number }
+        - in: query
+          name: southWestLng
+          schema: { type: number }
+        - in: query
+          name: northEastLat
+          schema: { type: number }
+        - in: query
+          name: northEastLng
+          schema: { type: number }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 500, maximum: 2000 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Point' } }
+
+  /me/preferences:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [me]
+      summary: Active private group, etc.
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  activeGroupId: { type: string, format: uuid, nullable: true }
+    patch:
+      security: [{ clerkBearer: [] }]
+      tags: [me]
+      summary: Set active private group
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                activeGroupId: { type: string, format: uuid, nullable: true }
+      responses:
+        '200': { description: Updated }
+        '403': { description: Not a member of group }
+
+  /points:
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [points]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PointCreate' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Point' }
+        '400':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /points/{pointId}/photo-upload:
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [points]
+      summary: Issue presigned upload for the one allowed image
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: contentType
+          in: query
+          schema: { type: string, example: image/jpeg }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PhotoUpload' }
+        '403': { description: Not author }
+        '404': { description: Not found }
+
+  /points/{pointId}/comments:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [points]
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Comment' } }
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [points]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, minLength: 1, maxLength: 4000 }
+      responses:
+        '201': { description: Created }
+        '401': { description: Unauthorized (guest) }
+
+  /points/{pointId}/rating:
+    put:
+      security: [{ clerkBearer: [] }]
+      tags: [points]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [value]
+              properties:
+                value: { type: integer, minimum: 1, maximum: 5 }
+      responses:
+        '200': { description: OK }
+        '401': { description: Unauthorized }
+
+# Additional routes (favorites, folders, groups, tags) to be expanded
+# in the same file as implementation progresses; version bump on breaking change.

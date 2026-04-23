@@ -9,7 +9,9 @@
 * 🟢 You can import this file directly.
 */
 
+export const PointVisibility = {
+  public: 'public',
+  group_only: 'group_only'
+} as const
 
-
-// This file is empty because there are no enums in the schema.
-export {}
+export type PointVisibility = (typeof PointVisibility)[keyof typeof PointVisibility]

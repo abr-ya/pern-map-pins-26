@@ -38,16 +38,16 @@
 **⚠️ CRITICAL**: No user story implementation until this phase is complete (except that Phase 1 must finish first).
 
 - [X] T006 **Prisma ORM 7**: `backend/prisma/schema.prisma` — `datasource db { provider = "postgresql" }` only (no `url` in schema; [Prisma 7 config](https://pris.ly/d/config-datasource)). `backend/prisma.config.ts` — `datasource.url` from `process.env.DATABASE_URL` after `import 'dotenv/config'`; `migrations.path`; scripts `db:generate` / `db:migrate` / `db:migrate:dev` in `backend/package.json`
-- [ ] T007 Define all models and relations in `backend/prisma/schema.prisma` per `specs/001-map-world-points/data-model.md` (User, Group, GroupMember, UserPreference, Folder, Point, Tag, PointTag, FavoriteFolder, Favorite, Comment, Rating)
-- [ ] T008 Create initial migration with `prisma migrate dev` from `backend/` (loads `prisma.config.ts` automatically) or `prisma migrate diff` + commit so `backend/prisma/migrations/` has `0001_*` SQL for Neon; document `db:migrate` / `db:migrate:dev` in `backend/package.json`
+- [X] T007 Define all models and relations in `backend/prisma/schema.prisma` per `specs/001-map-world-points/data-model.md` (User, Group, GroupMember, UserPreference, Folder, Point, Tag, PointTag, FavoriteFolder, Favorite, Comment, Rating)
+- [X] T008 Create initial migration with `prisma migrate dev` from `backend/` (loads `prisma.config.ts` automatically) or `prisma migrate diff` + commit so `backend/prisma/migrations/` has `0001_*` SQL for Neon; document `db:migrate` / `db:migrate:dev` in `backend/package.json`
 - [X] T009 `backend/src/lib/prisma.ts`: **singleton** `PrismaClient` with **`@prisma/adapter-pg` + `pg` `Pool`** and `globalThis` cache in dev ([runtime client](https://pris.ly/d/prisma7-client-config)); wire or re-export from `backend/src/index.ts` / `backend/src/db/index.ts` when the app starts
-- [ ] T010 **Express 5** application entry in `backend/src/index.ts` registering CORS for `FRONTEND_URL`, JSON body parser, request-id middleware, and global error handler in `backend/src/middleware/errorHandler.ts` returning contract-shaped errors (`code`, `message`) per `specs/001-map-world-points/contracts/openapi.yaml` (see [Express 5 migration](https://expressjs.com/en/guide/migrating-5.html) if upgrading patterns)
-- [ ] T011 [P] Add structured JSON logging in `backend/src/lib/logger.ts` and request logging middleware in `backend/src/middleware/requestLogger.ts`
-- [ ] T012 [P] Add WGS84 validation helpers in `backend/src/lib/geo.ts` (latitude ∈ [-90,90], longitude ∈ [-180,180]) for reuse on all point writes
-- [ ] T013 Mount `GET /api/health` in `backend/src/routes/health.ts` and register with the app per `specs/001-map-world-points/contracts/openapi.yaml` `/health`
-- [ ] T014 Add OpenAPI static asset path and serve Swagger UI at `GET /api/docs` in `backend/src/routes/docs.ts` (guarded in production per [research.md](./research.md)), sourcing spec from `backend/src/openapi/openapi.yaml` (initially copied or synced from `specs/001-map-world-points/contracts/openapi.yaml`)
-- [ ] T015 [P] Add TanStack Query client in `frontend/src/lib/queryClient.ts` and API base client in `frontend/src/lib/api.ts` using `import.meta.env.VITE_API_URL`
-- [ ] T016 [P] Add `frontend/.env.example` and `frontend/src/vite-env.d.ts` for `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_API_URL`
+- [X] T010 **Express 5** application entry in `backend/src/index.ts` registering CORS for `FRONTEND_URL`, JSON body parser, request-id middleware, and global error handler in `backend/src/middleware/errorHandler.ts` returning contract-shaped errors (`code`, `message`) per `specs/001-map-world-points/contracts/openapi.yaml` (see [Express 5 migration](https://expressjs.com/en/guide/migrating-5.html) if upgrading patterns)
+- [X] T011 [P] Add structured JSON logging in `backend/src/lib/logger.ts` and request logging middleware in `backend/src/middleware/requestLogger.ts`
+- [X] T012 [P] Add WGS84 validation helpers in `backend/src/lib/geo.ts` (latitude ∈ [-90,90], longitude ∈ [-180,180]) for reuse on all point writes
+- [X] T013 Mount `GET /api/health` in `backend/src/routes/health.ts` and register with the app per `specs/001-map-world-points/contracts/openapi.yaml` `/health`
+- [X] T014 Add OpenAPI static asset path and serve Swagger UI at `GET /api/docs` in `backend/src/routes/docs.ts` (guarded in production per [research.md](./research.md)), sourcing spec from `backend/src/openapi/openapi.yaml` (initially copied or synced from `specs/001-map-world-points/contracts/openapi.yaml`)
+- [X] T015 [P] Add TanStack Query client in `frontend/src/lib/queryClient.ts` and API base client in `frontend/src/lib/api.ts` using `import.meta.env.VITE_API_URL`
+- [X] T016 [P] Add `frontend/.env.example` and `frontend/src/vite-env.d.ts` for `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_API_URL` (plus `backend/.env.example` for `DATABASE_URL` and remote DB)
 
 **Checkpoint**: Health and DB migrations run; API serves docs in dev; frontend can call `${VITE_API_URL}/api/health`
 
