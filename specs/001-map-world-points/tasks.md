@@ -59,19 +59,19 @@
 
 **Independent test**: While unsigned, pan/zoom works; list and map show **at most five** public points, newest first; with zero data, list shows empty state and map still works. (Signed-in “full public layer” is covered in US4 once `/map/public` exists.)
 
-- [ ] T017 [US1] Implement `GET /api/public/latest` in `backend/src/routes/public.ts` delegating to `backend/src/services/publicPointsService.ts` (up to 5 rows: `visibility = public` and not group-only, `created_at` DESC) per [data-model.md](./data-model.md) and [contracts/openapi.yaml](./contracts/openapi.yaml) `/public/latest`
-- [ ] T018 [P] [US1] Add Zod/DTO mappers in `backend/src/lib/schemas/point.ts` and `backend/src/lib/photoUrl.ts` to build `Point` JSON with `photoUrl` from `R2_PUBLIC_BASE_URL` and `points.photo_key`
-- [ ] T019 [US1] Create feature module `frontend/src/features/map/MapPage.tsx` with `react-leaflet` `MapContainer`, OpenStreetMap tile layer, and proper Leaflet CSS import in `frontend/src/main.tsx` or `frontend/src/index.css`
-- [ ] T020 [P] [US1] Create `frontend/src/features/map/LatestPointsPanel.tsx` that loads `/api/public/latest` via TanStack Query and shows up to five items with empty state when `items` is empty
-- [ ] T021 [US1] Create `frontend/src/features/map/GuestMapLayer.tsx` that places markers **only** for the five (or fewer) point IDs from the latest endpoint and uses `useMap`/`fitBounds` (or world view) in `frontend/src/features/map/useGuestMapBounds.ts` so all markers remain reachable per [spec.md](./spec.md) edge cases
-- [ ] T022 [US1] Wire default route in `frontend/src/App.tsx` (or `frontend/src/routes/`) to `MapPage` at `/`
-- [ ] T023 [P] [US1] Keep `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml` aligned for implemented paths (`/public/latest`, `Point` schema)
+- [X] T017 [US1] Implement `GET /api/public/latest` in `backend/src/routes/public.ts` delegating to `backend/src/services/publicPointsService.ts` (up to 5 rows: `visibility = public` and not group-only, `created_at` DESC) per [data-model.md](./data-model.md) and [contracts/openapi.yaml](./contracts/openapi.yaml) `/public/latest`
+- [X] T018 [P] [US1] Add Zod/DTO mappers in `backend/src/lib/schemas/point.ts` and `backend/src/lib/photoUrl.ts` to build `Point` JSON with `photoUrl` from `R2_PUBLIC_BASE_URL` and `points.photo_key`
+- [X] T019 [US1] Create feature module `frontend/src/features/map/MapPage.tsx` with `react-leaflet` `MapContainer`, OpenStreetMap tile layer, and proper Leaflet CSS import in `frontend/src/main.tsx` or `frontend/src/index.css`
+- [X] T020 [P] [US1] Create `frontend/src/features/map/LatestPointsPanel.tsx` that loads `/api/public/latest` via TanStack Query and shows up to five items with empty state when `items` is empty
+- [X] T021 [US1] Create `frontend/src/features/map/GuestMapLayer.tsx` that places markers **only** for the five (or fewer) point IDs from the latest endpoint and uses `useMap`/`fitBounds` (or world view) in `frontend/src/features/map/useGuestMapBounds.ts` so all markers remain reachable per [spec.md](./spec.md) edge cases
+- [X] T022 [US1] Wire default route in `frontend/src/App.tsx` (or `frontend/src/routes/`) to `MapPage` at `/`
+- [X] T023 [P] [US1] Keep `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml` aligned for implemented paths (`/public/latest`, `Point` schema)
 
 ### Tests for User Story 1
 
-- [ ] T024 [P] [US1] Add `backend/tests/integration/public.latest.test.ts` with Supertest: `GET /api/public/latest` returns 200, `items.length` ≤ 5, ordering newest-first, and only public (non–group-only) points for seeded data
-- [ ] T025 [P] [US1] Add `backend/src/services/publicPointsService.test.ts` (or colocated `publicPointsService.integration.test.ts`) with tests for the “latest five” selection rules against a test database or query-level assertions
-- [ ] T026 [P] [US1] Add `frontend/src/features/map/LatestPointsPanel.test.tsx` and `frontend/src/features/map/GuestMapLayer.test.tsx` (Vitest + Testing Library): empty `items` state; mocked API returns ≤5 points
+- [X] T024 [P] [US1] Add `backend/tests/integration/public.latest.test.ts` with Supertest: `GET /api/public/latest` returns 200, `items.length` ≤ 5, ordering newest-first, and only public (non–group-only) points for seeded data
+- [X] T025 [P] [US1] Add `backend/src/services/publicPointsService.test.ts` (or colocated `publicPointsService.integration.test.ts`) with tests for the “latest five” selection rules against a test database or query-level assertions
+- [X] T026 [P] [US1] Add `frontend/src/features/map/LatestPointsPanel.test.tsx` and `frontend/src/features/map/GuestMapLayer.test.tsx` (Vitest + Testing Library): empty `items` state; mocked API returns ≤5 points
 
 **Checkpoint**: Guest experience matches **FR-001**, **FR-002**, **FR-011** for the main screen; US1 test suite green
 

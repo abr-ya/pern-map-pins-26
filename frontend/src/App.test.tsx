@@ -1,10 +1,19 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import App from './App';
 
 describe('App', () => {
-  it('renders title (Phase 1)', () => {
-    render(<App />);
-    expect(screen.getByRole('heading', { name: /map pins/i })).toBeInTheDocument();
+  it('loads the guest map view and latest panel', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ items: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    );
+    render(
+      <QueryClientProvider client={client}>
+        <App />
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByRole('heading', { name: /Latest public/i })).toBeInTheDocument();
   });
 });

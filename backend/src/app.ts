@@ -5,6 +5,7 @@ import { requestId } from './middleware/requestId.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { createDocsRouter } from './routes/docs.js';
 import { healthRouter } from './routes/health.js';
+import { publicRouter } from './routes/public.js';
 
 export function createApp(): express.Express {
   const app = express();
@@ -21,6 +22,7 @@ export function createApp(): express.Express {
   app.use(express.json());
   app.use(requestLogger);
   app.use('/api', healthRouter);
+  app.use('/api', publicRouter);
 
   const docs = createDocsRouter();
   if (docs) {
