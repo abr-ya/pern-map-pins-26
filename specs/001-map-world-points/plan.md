@@ -21,7 +21,7 @@ Deliver a **map-first web app** where guests see the **latest five** public poin
 **Storage**: **Neon** **PostgreSQL** 15+ (connection string; optional **PostGIS** later for heavy geo queries; **v1** uses `double precision` lat/lng + app validation per constitution).  
 **Object storage**: **Cloudflare R2** (S3 API, public or signed read URLs for images).  
 
-**Testing**: **Vitest** + **Supertest** (API), **Vitest** + **Testing Library** (React), **Playwright** for smoke E2E on critical paths (map + point CRUD) when time allows.  
+**Testing**: **Vitest** + **Supertest** (API), **Vitest** + **Testing Library** (React), **Playwright** for smoke E2E on critical paths (map + point CRUD). Workspace lives in `e2e/`; **US1 covered** (`e2e/tests/guest-map.spec.ts`), **US2/US3 tracked** under tasks.md `T073`, CI workflow under `T074`.  
 
 **Target Platform**: **Web** (evergreen browsers); API on **Linux** containers (Node).  
 
@@ -47,7 +47,7 @@ Deliver a **map-first web app** where guests see the **latest five** public poin
 
 - **Full-stack boundaries**: **Express** is authoritative for visibility rules, point persistence, and presigned upload policy; **React** only reflects API + Clerk session. **No** second source of truth for “who sees what” beyond documented Clerk identity mapping.
 - **Geospatial and data integrity**: All point creates/updates go through Zod + server checks; `latitude`/`longitude` as validated numbers; out-of-range **400**; **no** silent coordinate drift. CRS: **WGS84**; document in [data-model.md](./data-model.md).
-- **Testable delivery**: API routes covered by **Vitest+Supertest**; domain helpers unit-tested; React **components and hooks** with Testing Library; E2E optional but recommended for sign-in and create point.
+- **Testable delivery**: API routes covered by **Vitest+Supertest**; domain helpers unit-tested; React **components and hooks** with Testing Library; **Playwright** smoke E2E in `e2e/` — **US1 done**, US2 sign-in and US3 create-point tracked under `tasks.md` `T073`.
 - **API contracts**: **OpenAPI 3** in [contracts/openapi.yaml](./contracts/openapi.yaml); breaking changes require version bump + notes (Principle IV).
 - **Operability**: Structured JSON logs, request id, global error handler mapping to stable client-facing codes/messages. **Complexity** below justified: Clerk + R2 add integration surface but replace months of custom auth and storage (see [research.md](./research.md)).
 

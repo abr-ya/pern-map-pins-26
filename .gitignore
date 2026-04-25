@@ -27,6 +27,13 @@ Thumbs.db
 
 # Prisma: keep prisma/migrations/ committed; do not commit generated client (in node_modules)
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
+
 # Misc
 *.swp
 *.tmp
+.cursor/mcp.json

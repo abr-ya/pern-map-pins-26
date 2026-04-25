@@ -9,7 +9,9 @@
     "dev": "pnpm -r --parallel run dev",
     "build": "pnpm -r run build",
     "lint": "eslint .",
-    "test": "pnpm -r run test"
+    "test": "pnpm --filter backend --filter frontend run test",
+    "test:e2e": "pnpm --filter e2e run test",
+    "test:e2e:ui": "pnpm --filter e2e run test:ui"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",

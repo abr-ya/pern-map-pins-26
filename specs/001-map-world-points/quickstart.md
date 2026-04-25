@@ -83,4 +83,29 @@ curl -s http://localhost:3000/api/health
 pnpm -r test
 ```
 
+## 7. End-to-end tests (Playwright)
+
+E2E tests live in the `e2e/` workspace. They target the **frontend dev server** and mock backend responses with `page.route(...)`, so they do **not** require a running API or database.
+
+First-time setup (downloads Chromium into `~/.cache/ms-playwright/`):
+
+```bash
+pnpm install
+pnpm --filter e2e exec playwright install --with-deps chromium
+```
+
+Run:
+
+```bash
+pnpm test:e2e          # headless, list reporter
+pnpm test:e2e:ui       # Playwright UI mode
+pnpm --filter e2e exec playwright show-report   # open HTML report after a run
+```
+
+Notes:
+
+- Playwright auto-starts `pnpm --filter frontend dev` via `webServer` in `e2e/playwright.config.ts`. If `pnpm dev` is already running locally, it is reused (`reuseExistingServer: true` outside CI).
+- Override the target URL with `E2E_FRONTEND_URL=…` (e.g. against a preview deploy).
+- In CI, retries are enabled and reporters are `github` + `html`; the report path is `e2e/playwright-report/`.
+
 > Until `_implement` is done, this file is a **contract** for the tasks phase.

@@ -28,6 +28,7 @@
 - [X] T003 [P] Initialize `frontend/package.json` with Vite, React, TypeScript, **Tailwind CSS 4**, TanStack Query v5, `@clerk/react`, `react-leaflet`, `leaflet`, `react-hook-form`, `@hookform/resolvers`, and **Zod 4**; add `frontend/vitest.config.ts` (or Vite `test` with Vitest) and `jsdom` for Testing Library, plus `test` script
 - [X] T004 [P] Add strict `tsconfig.json` for `backend/tsconfig.json` and `frontend/tsconfig.json` with project references or root `tsconfig.json` as needed
 - [X] T005 [P] Add ESLint (and Prettier if desired) config at `eslint.config.mjs` or equivalent at repository root
+- [X] T005a [P] Add **Playwright** E2E workspace at `e2e/` (`e2e/package.json`, `e2e/playwright.config.ts`, `e2e/tsconfig.json`, `e2e/.gitignore`); register `e2e` in root `pnpm-workspace.yaml`; expose `test:e2e` and `test:e2e:ui` scripts in root `package.json`; extend root `.gitignore` with Playwright artifacts (`test-results/`, `playwright-report/`, `playwright/.cache/`, `blob-report/`); Playwright `webServer` reuses local `pnpm --filter frontend dev` per [plan.md](./plan.md) testing line
 
 ---
 
@@ -72,8 +73,9 @@
 - [X] T024 [P] [US1] Add `backend/tests/integration/public.latest.test.ts` with Supertest: `GET /api/public/latest` returns 200, `items.length` ≤ 5, ordering newest-first, and only public (non–group-only) points for seeded data
 - [X] T025 [P] [US1] Add `backend/src/services/publicPointsService.test.ts` (or colocated `publicPointsService.integration.test.ts`) with tests for the “latest five” selection rules against a test database or query-level assertions
 - [X] T026 [P] [US1] Add `frontend/src/features/map/LatestPointsPanel.test.tsx` and `frontend/src/features/map/GuestMapLayer.test.tsx` (Vitest + Testing Library): empty `items` state; mocked API returns ≤5 points
+- [X] T026a [P] [US1] Add Playwright smoke spec `e2e/tests/guest-map.spec.ts` mocking `**/api/public/latest` via `page.route` (no DB needed): empty state renders; up to five `aside li .font-medium` items and matching `[data-testid="map-pin"][data-point-id=…]`, newest first; cap at five when API returns more
 
-**Checkpoint**: Guest experience matches **FR-001**, **FR-002**, **FR-011** for the main screen; US1 test suite green
+**Checkpoint**: Guest experience matches **FR-001**, **FR-002**, **FR-011** for the main screen; US1 test suite green (incl. Playwright smoke)
 
 ---
 
@@ -183,6 +185,8 @@
 - [ ] T070 Harden `backend/src/routes/docs.ts` and env-based toggles in `backend/src/index.ts` for production (disable or protect Swagger) per [plan.md](./plan.md) and `.specify/memory/constitution.md`
 - [ ] T071 [P] Add top-level `README.md` with pointer to `specs/001-map-world-points/plan.md` and how to run frontend/backend
 - [ ] T072 Verify partial indexes and constraints in `backend/prisma/migrations` (or `@@index` in `schema.prisma`) match “latest five” and FK rules in [data-model.md](./data-model.md) (add follow-up Prisma migration if anything was deferred)
+- [ ] T073 [P] Extend Playwright coverage to **US2** sign-in (`e2e/tests/auth.spec.ts`) and **US3** create-point (`e2e/tests/create-point.spec.ts`) per [plan.md](./plan.md) Constitution Check (E2E recommended for sign-in and create point); use Clerk testing tokens / mocked auth and `page.route` for API where a real DB is not desired
+- [ ] T074 Add GitHub Actions workflow `.github/workflows/e2e.yml` running `pnpm install`, `pnpm --filter e2e exec playwright install --with-deps chromium`, `pnpm test:e2e`; upload `e2e/playwright-report/` as artifact on failure (matches `reporter` setting in `e2e/playwright.config.ts` for CI)
 
 ---
 
