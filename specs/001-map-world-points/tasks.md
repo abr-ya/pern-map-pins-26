@@ -85,19 +85,19 @@
 
 **Independent test**: Register and sign in with email and Google; invalid sign-in does not leak account hints; after sign-in, session is obvious in UI; creating a point is not blocked by inbox verification (FR-013) once US3 is implemented.
 
-- [ ] T027 [US2] Wrap the app in `ClerkProvider` in `frontend/src/main.tsx` using `VITE_CLERK_PUBLISHABLE_KEY`
-- [ ] T028 [P] [US2] Add auth entry UI in `frontend/src/features/auth/AuthDialog.tsx` (or `frontend/src/features/auth/AuthRoutes.tsx`) using Clerk `SignIn` / `SignUp` components without breaking `MapPage` use
-- [ ] T029 [US2] Add Clerk authentication middleware in `backend/src/middleware/clerkAuth.ts` (Bearer / session as per Clerk + Express docs) and apply to protected routers
-- [ ] T030 [US2] Implement Clerk webhook route in `backend/src/routes/webhooks.ts` calling `backend/src/services/userSyncService.ts` to upsert `users` on `user.created` / `user.updated` with `CLERK_WEBHOOK_SECRET` verification
-- [ ] T031 [P] [US2] Add `backend/.env.example` with `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `FRONTEND_URL`, and R2 variables per `specs/001-map-world-points/quickstart.md`
-- [ ] T032 [US2] Add `frontend/src/components/AppHeader.tsx` (or `frontend/src/components/UserMenu.tsx`) showing signed-in state and sign-out using Clerk, integrated into `frontend/src/App.tsx`
-- [ ] T033 [P] [US2] Ensure CORS in `backend/src/index.ts` allows the configured frontend origin only (per [research.md](./research.md))
+- [X] T027 [US2] Wrap the app in `ClerkProvider` in `frontend/src/main.tsx` using `VITE_CLERK_PUBLISHABLE_KEY`
+- [X] T028 [P] [US2] Add auth entry UI in `frontend/src/features/auth/AuthDialog.tsx` (or `frontend/src/features/auth/AuthRoutes.tsx`) using Clerk `SignIn` / `SignUp` components without breaking `MapPage` use
+- [X] T029 [US2] Add Clerk authentication middleware in `backend/src/middleware/clerkAuth.ts` (Bearer / session as per Clerk + Express docs) and apply to protected routers
+- [X] T030 [US2] Implement Clerk webhook route in `backend/src/routes/webhooks.ts` calling `backend/src/services/userSyncService.ts` to upsert `users` on `user.created` / `user.updated` with `CLERK_WEBHOOK_SECRET` verification
+- [X] T031 [P] [US2] Add `backend/.env.example` with `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `FRONTEND_URL`, and R2 variables per `specs/001-map-world-points/quickstart.md`
+- [X] T032 [US2] Add `frontend/src/components/AppHeader.tsx` (or `frontend/src/components/UserMenu.tsx`) showing signed-in state and sign-out using Clerk, integrated into `frontend/src/App.tsx`
+- [X] T033 [P] [US2] Ensure CORS in `backend/src/index.ts` allows the configured frontend origin only (per [research.md](./research.md))
 
 ### Tests for User Story 2
 
-- [ ] T034 [P] [US2] Add `backend/tests/integration/auth.protected.test.ts` with Supertest: a protected sample route (or `POST /api/points` after stub) returns **401/403** when `Authorization` is missing/invalid, using Clerk test doubles or mock JWT as documented for Vitest
-- [ ] T035 [P] [US2] Add `backend/tests/integration/webhooks.clerk.test.ts` with Supertest: `POST` webhook with valid `svix`/`CLERK` signature body creates/updates `users`; invalid signature returns **4xx** without DB writes
-- [ ] T036 [P] [US2] Add `frontend/src/components/AppHeader.test.tsx` (Vitest + Testing Library) with `@clerk/react` test helpers: signed-out vs signed-in render paths
+- [X] T034 [P] [US2] Add `backend/tests/integration/auth.protected.test.ts` with Supertest: a protected sample route (or `POST /api/points` after stub) returns **401/403** when `Authorization` is missing/invalid, using Clerk test doubles or mock JWT as documented for Vitest
+- [X] T035 [P] [US2] Add `backend/tests/integration/webhooks.clerk.test.ts` with Supertest: `POST` webhook with valid `svix`/`CLERK` signature body creates/updates `users`; invalid signature returns **4xx** without DB writes
+- [X] T036 [P] [US2] Add `frontend/src/components/AppHeader.test.tsx` (Vitest + Testing Library) with `@clerk/react` test helpers: signed-out vs signed-in render paths
 
 **Checkpoint**: Auth works end-to-end; internal `users` rows align with Clerk ids for subsequent stories; US2 test suite green
 

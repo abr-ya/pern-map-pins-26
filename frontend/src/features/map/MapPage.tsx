@@ -17,7 +17,7 @@ export function MapPage() {
   const items = useMemo(() => data?.items ?? [], [data?.items]);
 
   return (
-    <div className="flex h-dvh min-h-0 w-full flex-col bg-slate-100 md:flex-row">
+    <div className="flex h-full min-h-0 w-full flex-col bg-slate-100 md:flex-row">
       <div className="relative min-h-[55vh] flex-1 md:min-h-0">
         <MapContainer
           className="z-0 h-full w-full"

@@ -14,6 +14,8 @@ tags:
   - name: points
   - name: me
   - name: meta
+  - name: auth
+    description: Clerk session probes and inbound webhook for user sync (US2).
 
 components:
   securitySchemes:
@@ -94,6 +96,72 @@ paths:
                 type: object
                 properties:
                   status: { type: string, example: ok }
+
+  /me:
+    get:
+      tags: [auth]
+      security: [{ clerkBearer: [] }]
+      summary: >
+        Sanity probe — confirms the bearer token resolves to a Clerk session.
+        Full user/preferences API is added in T049 (Phase 6).
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authenticated]
+                properties:
+                  authenticated: { type: boolean, example: true }
+                  clerkUserId: { type: string, nullable: true, example: user_2abc... }
+        '401':
+          description: Missing or invalid Clerk session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /webhooks/clerk:
+    post:
+      tags: [auth]
+      summary: Clerk → backend user-sync webhook (Svix-signed)
+      description: >
+        Receives `user.created` / `user.updated` / `user.deleted` events from
+        Clerk and upserts the internal `users` row keyed by `clerk_id`.
+        Authenticated by Svix headers (`svix-id`, `svix-timestamp`,
+        `svix-signature`); the `CLERK_WEBHOOK_SECRET` env var holds the
+        signing secret. Other event types are accepted with `ignored: true`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Raw Clerk webhook event (verified server-side).
+              additionalProperties: true
+      responses:
+        '200':
+          description: Event accepted (or ignored for unhandled types).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [received]
+                properties:
+                  received: { type: boolean, example: true }
+                  type: { type: string, example: user.created }
+                  ignored: { type: boolean, example: false }
+                  clerkId: { type: string, example: user_2abc... }
+        '400':
+          description: Invalid Svix signature or payload (no DB writes performed).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '500':
+          description: Webhook secret not configured on the server.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
 
   /public/latest:
     get:
