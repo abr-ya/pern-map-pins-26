@@ -308,7 +308,7 @@ Library → pern-map-pins / points/**.
   one free-tier account.
 - If the free-tier credit budget becomes tight later, the natural
   next step is upgrading Cloudinary, **not** moving providers — the
-  abstraction in `backend/src/lib/cloudinary.ts` (added in T038)
+  abstraction in `backend/src/lib/cloudinaryUpload.ts` (T038)
   isolates the rest of the codebase from this concern.
 
 ---

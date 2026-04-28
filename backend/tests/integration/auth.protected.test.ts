@@ -40,6 +40,23 @@ describe('Clerk-protected routes (T034)', () => {
     expect(res.status).toBe(401);
   });
 
+  it('returns 401 for POST /api/points without Authorization header', async () => {
+    const { createApp } = await import('../../src/app.js');
+    const res = await request(createApp()).post('/api/points').send({
+      title: 'X',
+      latitude: 0,
+      longitude: 0,
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 401 for POST /api/points/:pointId/photo-upload without Authorization', async () => {
+    const { createApp } = await import('../../src/app.js');
+    const pointId = '00000000-0000-4000-8000-0000000000aa';
+    const res = await request(createApp()).post(`/api/points/${pointId}/photo-upload`);
+    expect(res.status).toBe(401);
+  });
+
   it('keeps the public route accessible without auth', async () => {
     vi.doMock('../../src/lib/prisma.js', () => ({
       prisma: { point: { findMany: vi.fn().mockResolvedValue([]) } },

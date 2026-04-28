@@ -21,19 +21,15 @@
 
 ---
 
-## 2. Object storage (photos): free, stable, S3-like
+## 2. Object storage (photos)
 
-**Decision: Cloudflare R2** (S3-compatible API)
+**Decision (implementation): [Cloudinary](https://cloudinary.com/)** — signed direct upload from the browser; `points.photo_key` stores the Cloudinary `public_id`; public URLs are derived in `backend/src/lib/photoUrl.ts` using `CLOUDINARY_CLOUD_NAME`. Setup steps: [`docs/cloudinary-setup.md`](../../docs/cloudinary-setup.md).
 
-**Rationale**:
-- **Open API**: **Amazon S3** API → use `@aws-sdk/client-s3` with R2 endpoint; no lock-in to proprietary upload SDKs.
-- **Cost model**: **Generous free tier**; often **no credit card** for initial signup (regional / policy may vary—confirm at setup).
-- **Flow**: Backend issues **presigned PUT**; browser uploads from **react-dropzone**; store `object key` in `points.photo_key`; public URL can be R2 public bucket URL or **signed GET** for private reads (recommend **public read** for point photos with unguessable keys + auth on **metadata** if needed later).
-
-**Alternatives considered**:
+**Alternatives considered (historical)**:
+- **Cloudflare R2** (S3-compatible API) was the **original** plan in early design: presigned `PUT`, `@aws-sdk/client-s3`, object key in `photo_key`. **Not used in this repository** — we compared egress, billing (card on file), and DX; see [`docs/r2-vs-uploadthing.md`](../../docs/r2-vs-uploadthing.md) and [`docs/object-storage-alternatives.md`](../../docs/object-storage-alternatives.md).
 - **Local disk / Docker volume**: Fails **split deploy** and horizontal scaling; only for local dev.
 - **Supabase Storage**: Nice DX but couples another vendor; team already chose **Neon** for DB.
-- **Backblaze B2**: Similar; R2 + optional same Cloudflare account keeps egress patterns simple.
+- **Backblaze B2**: Similar trade-offs to R2; not selected.
 
 **Constraints (spec)**:
 - **One** image per point (v1); reject multi-file uploads in API.
@@ -83,8 +79,8 @@
 
 **Decision**:
 - **Frontend**: **Vercel**, **Netlify**, or **Cloudflare Pages** — static/SSR-less SPA; env: `VITE_CLERK_PUBLISHABLE_KEY`, `VITE_API_URL`.
-- **Backend**: **Railway**, **Fly.io**, or **Render** — Node process; env: `DATABASE_URL`, `CLERK_SECRET_KEY`, R2 keys, `FRONTEND_URL` (CORS), `R2_*`.
-- **Neon** and **R2** are **managed**; no colocation requirement.
+- **Backend**: **Railway**, **Fly.io**, or **Render** — Node process; env: `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `FRONTEND_URL` (CORS), **`CLOUDINARY_*`** (see `docs/cloudinary-setup.md`).
+- **Neon** and **Cloudinary** are **managed**; no colocation requirement.
 
 **CORS**: Allow only `FRONTEND_URL` origin(s) in production.
 

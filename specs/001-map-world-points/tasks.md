@@ -24,7 +24,7 @@
 **Purpose**: Monorepo scaffold and toolchain so `backend/` and `frontend/` are buildable and runnable.
 
 - [X] T001 Create pnpm workspace with root `package.json` and `pnpm-workspace.yaml` including `frontend` and `backend` at repository root
-- [X] T002 [P] Initialize `backend/package.json` with TypeScript, **Express 5** (`express@^5`), `tsx`, Vitest, Supertest, **Prisma** (`@prisma/client`, `prisma` CLI), **Zod 4**, `pino`, `cors`, `@clerk/express`, and `@aws-sdk/client-s3` for R2; add `backend/vitest.config.ts` and `test` / `test:watch` scripts suitable for `backend/tests/`
+- [X] T002 [P] Initialize `backend/package.json` with TypeScript, **Express 5** (`express@^5`), `tsx`, Vitest, Supertest, **Prisma** (`@prisma/client`, `prisma` CLI), **Zod 4**, `pino`, `cors`, `@clerk/express`; add `backend/vitest.config.ts` and `test` / `test:watch` scripts suitable for `backend/tests/` *(object storage is **Cloudinary**, not R2 / `@aws-sdk/client-s3`)*
 - [X] T003 [P] Initialize `frontend/package.json` with Vite, React, TypeScript, **Tailwind CSS 4**, TanStack Query v5, `@clerk/react`, `react-leaflet`, `leaflet`, `react-hook-form`, `@hookform/resolvers`, and **Zod 4**; add `frontend/vitest.config.ts` (or Vite `test` with Vitest) and `jsdom` for Testing Library, plus `test` script
 - [X] T004 [P] Add strict `tsconfig.json` for `backend/tsconfig.json` and `frontend/tsconfig.json` with project references or root `tsconfig.json` as needed
 - [X] T005 [P] Add ESLint (and Prettier if desired) config at `eslint.config.mjs` or equivalent at repository root
@@ -61,7 +61,7 @@
 **Independent test**: While unsigned, pan/zoom works; list and map show **at most five** public points, newest first; with zero data, list shows empty state and map still works. (Signed-in “full public layer” is covered in US4 once `/map/public` exists.)
 
 - [X] T017 [US1] Implement `GET /api/public/latest` in `backend/src/routes/public.ts` delegating to `backend/src/services/publicPointsService.ts` (up to 5 rows: `visibility = public` and not group-only, `created_at` DESC) per [data-model.md](./data-model.md) and [contracts/openapi.yaml](./contracts/openapi.yaml) `/public/latest`
-- [X] T018 [P] [US1] Add Zod/DTO mappers in `backend/src/lib/schemas/point.ts` and `backend/src/lib/photoUrl.ts` to build `Point` JSON with `photoUrl` from `R2_PUBLIC_BASE_URL` and `points.photo_key`
+- [X] T018 [P] [US1] Add Zod/DTO mappers in `backend/src/lib/schemas/point.ts` and `backend/src/lib/photoUrl.ts` to build `Point` JSON with `photoUrl` from `CLOUDINARY_CLOUD_NAME` and `points.photo_key` (Cloudinary `public_id`)
 - [X] T019 [US1] Create feature module `frontend/src/features/map/MapPage.tsx` with `react-leaflet` `MapContainer`, OpenStreetMap tile layer, and proper Leaflet CSS import in `frontend/src/main.tsx` or `frontend/src/index.css`
 - [X] T020 [P] [US1] Create `frontend/src/features/map/LatestPointsPanel.tsx` that loads `/api/public/latest` via TanStack Query and shows up to five items with empty state when `items` is empty
 - [X] T021 [US1] Create `frontend/src/features/map/GuestMapLayer.tsx` that places markers **only** for the five (or fewer) point IDs from the latest endpoint and uses `useMap`/`fitBounds` (or world view) in `frontend/src/features/map/useGuestMapBounds.ts` so all markers remain reachable per [spec.md](./spec.md) edge cases
@@ -89,7 +89,7 @@
 - [X] T028 [P] [US2] Add auth entry UI in `frontend/src/features/auth/AuthDialog.tsx` (or `frontend/src/features/auth/AuthRoutes.tsx`) using Clerk `SignIn` / `SignUp` components without breaking `MapPage` use
 - [X] T029 [US2] Add Clerk authentication middleware in `backend/src/middleware/clerkAuth.ts` (Bearer / session as per Clerk + Express docs) and apply to protected routers
 - [X] T030 [US2] Implement Clerk webhook route in `backend/src/routes/webhooks.ts` calling `backend/src/services/userSyncService.ts` to upsert `users` on `user.created` / `user.updated` with `CLERK_WEBHOOK_SECRET` verification
-- [X] T031 [P] [US2] Add `backend/.env.example` with `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `FRONTEND_URL`, and R2 variables per `specs/001-map-world-points/quickstart.md`
+- [X] T031 [P] [US2] Add `backend/.env.example` with `DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `FRONTEND_URL`, and **Cloudinary** variables per `specs/001-map-world-points/quickstart.md`
 - [X] T032 [US2] Add `frontend/src/components/AppHeader.tsx` (or `frontend/src/components/UserMenu.tsx`) showing signed-in state and sign-out using Clerk, integrated into `frontend/src/App.tsx`
 - [X] T033 [P] [US2] Ensure CORS in `backend/src/index.ts` allows the configured frontend origin only (per [research.md](./research.md))
 
@@ -109,23 +109,23 @@
 
 **Independent test**: Create point with title only, then with description/photo; create folders and tags; assign tags; select folder and see expected markers. Presigned upload and single-image rules per [spec.md](./spec.md) **FR-004** / **FR-005** / **FR-006**.
 
-- [ ] T037 [US3] Implement `POST /api/points` in `backend/src/routes/points.ts` with Zod `PointCreate`, `geo` validation, and persistence in `backend/src/services/pointWriteService.ts` per [contracts/openapi.yaml](./contracts/openapi.yaml) `/points`
-- [ ] T038 [P] [US3] Implement `POST /api/points/{pointId}/photo-upload` in `backend/src/routes/points.ts` with R2 presigned PUT in `backend/src/lib/r2.ts` and size/content-type policy in `backend/src/middleware/uploadPolicy.ts`
+- [X] T037 [US3] Implement `POST /api/points` in `backend/src/routes/points.ts` with Zod `PointCreate`, `geo` validation, and persistence in `backend/src/services/pointWriteService.ts` per [contracts/openapi.yaml](./contracts/openapi.yaml) `/points`
+- [X] T038 [P] [US3] Implement `POST /api/points/{pointId}/photo-upload` in `backend/src/routes/points.ts` with **Cloudinary** signed direct-upload params in `backend/src/lib/cloudinaryUpload.ts` (or equivalent) and size/content-type policy in `backend/src/middleware/uploadPolicy.ts`
 - [ ] T039 [P] [US3] Add folder CRUD and ownership checks in `backend/src/routes/folders.ts` and `backend/src/services/folderService.ts` per [data-model.md](./data-model.md) `folders`
 - [ ] T040 [P] [US3] Add tag and `point_tags` handling in `backend/src/routes/tags.ts` and `backend/src/services/tagService.ts` with assignment from point create/update
 - [ ] T041 [US3] Add `frontend/src/features/points/CreatePointForm.tsx` with `react-hook-form` + Zod, triggered from map click in `frontend/src/features/map/MapPage.tsx`, calling `POST /api/points` and optional `photo-upload` after save
 - [ ] T042 [P] [US3] Add `frontend/src/features/folders/FolderList.tsx` and map filter state (folder id in URL or context) in `frontend/src/features/map/MapPage.tsx` wiring to a `GET` API for the signed-in user’s points filtered by `folderId` in `backend/src/routes/pointsQuery.ts` (or extend `backend/src/routes/points.ts`) — add paths to `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml`
 - [ ] T043 [US3] Add marker list/cluster pattern in `frontend/src/features/map/ClusteredMarkers.tsx` (or `leaflet.markercluster`) to satisfy overlap edge case in [spec.md](./spec.md) when many markers exist
-- [ ] T044 [P] [US3] Enforce at most one `photo_key` per point; allow replace via new presign + update in `backend/src/services/pointWriteService.ts` and `CreatePointForm.tsx`
+- [ ] T044 [P] [US3] Enforce at most one `photo_key` per point; allow replace via new Cloudinary signed upload + update in `backend/src/services/pointWriteService.ts` and `CreatePointForm.tsx`
 
 ### Tests for User Story 3
 
-- [ ] T045 [P] [US3] Add `backend/src/lib/geo.test.ts` with Vitest: rejects lat/lng out of WGS84 range (align with `backend/src/lib/geo.ts` and 400s from `POST /api/points`)
+- [X] T045 [P] [US3] Add `backend/src/lib/geo.test.ts` with Vitest: rejects lat/lng out of WGS84 range (align with `backend/src/lib/geo.ts` and 400s from `POST /api/points`)
 - [ ] T046 [P] [US3] Add `backend/tests/integration/points.create.test.ts` with Supertest + authenticated user fixture: `POST /api/points` returns 201; invalid coordinates return **400** with contract error shape; second image attempt rejected per **FR-004**
-- [ ] T047 [P] [US3] Add `backend/tests/integration/photo-upload.test.ts` and `backend/tests/integration/folders-tags.test.ts` (or one `points.features.test.ts`): presigned upload author-only; folder CRUD and tag assign return expected status codes
+- [ ] T047 [P] [US3] Add `backend/tests/integration/photo-upload.test.ts` and `backend/tests/integration/folders-tags.test.ts` (or one `points.features.test.ts`): **Cloudinary** upload authorize-only; folder CRUD and tag assign return expected status codes
 - [ ] T048 [P] [US3] Add `frontend/src/features/points/CreatePointForm.test.tsx` (Testing Library + user-event): required title, validation messages, map-click coordinate passthrough (mocked)
 
-**Checkpoint**: Signed-in user can create, label, and organize points with optional photo (R2) and see folder-filtered map; US3 test suite green
+**Checkpoint**: Signed-in user can create, label, and organize points with optional photo (**Cloudinary**) and see folder-filtered map; US3 test suite green
 
 ---
 
@@ -289,5 +289,5 @@
 ## Notes
 
 - Extend `specs/001-map-world-points/contracts/openapi.yaml` (and the served copy) whenever new routes are added; version bump on breaking changes per [plan.md](./plan.md)
-- R2: local dev may use mock presign if needed; document in `specs/001-map-world-points/quickstart.md`
+- **Cloudinary**: local dev uses a real dev cloud or skips photo until keys are set; document in `specs/001-map-world-points/quickstart.md`. *R2 is not part of this codebase.*
 - Group membership **onboarding** (invite vs admin) is explicitly flexible in [research.md](./research.md) — implement one path in T050 and document it

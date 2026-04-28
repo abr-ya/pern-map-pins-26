@@ -7,6 +7,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { createDocsRouter } from './routes/docs.js';
 import { healthRouter } from './routes/health.js';
 import { meRouter } from './routes/me.js';
+import { pointsRouter } from './routes/points.js';
 import { publicRouter } from './routes/public.js';
 import { webhooksRouter } from './routes/webhooks.js';
 
@@ -31,6 +32,7 @@ export function createApp(): express.Express {
   app.use('/api', publicRouter);
   app.use('/api', webhooksRouter);
   app.use('/api', meRouter);
+  app.use('/api', pointsRouter);
 
   const docs = createDocsRouter();
   if (docs) {

@@ -6,7 +6,7 @@
 
 - **Node.js 20** LTS
 - **pnpm** 9+ (recommended) or npm
-- Accounts: **Clerk** (dev instance), **Neon** (free DB), **Cloudflare** (R2 bucket optional for local—can mock in dev)
+- Accounts: **Clerk** (dev instance), **Neon** (free DB), **Cloudinary** (free tier for photos; see `docs/cloudinary-setup.md`). *Cloudflare R2 is not used.*
 
 ## 1. Clone and install
 
@@ -35,11 +35,12 @@ cp frontend/.env.example frontend/.env
 - `CLERK_PUBLISHABLE_KEY=` (for any server-side use)
 - `CLERK_WEBHOOK_SECRET=` — if using webhooks to sync `users`
 - `FRONTEND_URL=http://localhost:5173`
-- `R2_ACCOUNT_ID=`, `R2_ACCESS_KEY_ID=`, `R2_SECRET_ACCESS_KEY=`, `R2_BUCKET_NAME=`, `R2_PUBLIC_BASE_URL=`
+- **Cloudinary** (photos): `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_UPLOAD_PRESET`, `CLOUDINARY_UPLOAD_FOLDER` — see [`docs/cloudinary-setup.md`](../../docs/cloudinary-setup.md). *We evaluated **Cloudflare R2** but do not use it in this repo.*
 
 ### `frontend/.env`
 
 - `VITE_CLERK_PUBLISHABLE_KEY=`
+- `VITE_CLOUDINARY_CLOUD_NAME=` (same as backend cloud name; used to build image URLs in the SPA)
 - `VITE_API_URL=http://localhost:3000` (or your API origin; no trailing slash)
 
 ## 3. Database

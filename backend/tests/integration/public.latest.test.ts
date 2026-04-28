@@ -51,11 +51,13 @@ describe('GET /api/public/latest', () => {
     });
   });
 
-  it('builds photoUrl when R2 base is set', async () => {
-    vi.stubEnv('R2_PUBLIC_BASE_URL', 'https://cdn.example.com');
-    const row = makePoint({ photoKey: 'images/a.jpg' });
+  it('builds photoUrl when CLOUDINARY_CLOUD_NAME is set', async () => {
+    vi.stubEnv('CLOUDINARY_CLOUD_NAME', 'demo-cloud');
+    const row = makePoint({ photoKey: 'pern-map-pins/points/abc123' });
     vi.mocked(prisma.point.findMany).mockResolvedValue([row]);
     const res = await request(createApp()).get('/api/public/latest');
-    expect(res.body.items[0].photoUrl).toBe('https://cdn.example.com/images/a.jpg');
+    expect(res.body.items[0].photoUrl).toBe(
+      'https://res.cloudinary.com/demo-cloud/image/upload/f_auto,q_auto/pern-map-pins/points/abc123',
+    );
   });
 });

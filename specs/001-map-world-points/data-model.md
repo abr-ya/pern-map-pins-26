@@ -69,7 +69,7 @@ Index: `(user_id)`.
 | `visibility` | text enum | `public` \| `group_only` (redundant with `group_id` if we enforce `group_id NOT NULL` for group—**simplify**: `visibility` = `public` (default) or `group_only` with `group_id` required) |
 | `title` | text | not null |
 | `description` | text | |
-| `photo_key` | text | R2 object key, nullable; max one image |
+| `photo_key` | text | Cloudinary asset path / `public_id` (under upload folder), nullable; max one image *(early design used an R2 object-key shape; R2 is not integrated)* |
 | `latitude` | double | not null, validated |
 | `longitude` | double | not null, validated |
 | `created_at` | timestamptz | for “latest five” |

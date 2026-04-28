@@ -76,11 +76,23 @@ components:
 
     PhotoUpload:
       type: object
-      required: [uploadUrl, photoKey, expiresAt]
+      description: Signed direct-upload parameters for Cloudinary (multipart POST).
+      required:
+        [uploadUrl, apiKey, timestamp, signature, uploadPreset, cloudName, folder, photoKey]
       properties:
-        uploadUrl: { type: string, format: uri, description: Presigned PUT URL (R2) }
-        photoKey: { type: string, description: Key to store on point after upload }
-        expiresAt: { type: string, format: date-time }
+        uploadUrl:
+          type: string
+          format: uri
+          description: POST URL for the image upload (`https://api.cloudinary.com/v1_1/<cloud>/image/upload`).
+        apiKey: { type: string, description: Cloudinary API key (safe to send to an authenticated client for upload only). }
+        timestamp: { type: integer, description: Unix seconds included in the signature. }
+        signature: { type: string, description: Server-side HMAC for the signed upload_preset and folder. }
+        uploadPreset: { type: string }
+        cloudName: { type: string }
+        folder: { type: string, description: Target folder / public_id prefix (must match signed parameters). }
+        photoKey:
+          type: string
+          description: Cloudinary `public_id` to persist on `points.photo_key` after the client upload completes successfully.
 
 paths:
   /health:
@@ -276,7 +288,7 @@ paths:
     post:
       security: [{ clerkBearer: [] }]
       tags: [points]
-      summary: Issue presigned upload for the one allowed image
+      summary: Issue signed Cloudinary direct-upload parameters for the one allowed image
       parameters:
         - name: pointId
           in: path

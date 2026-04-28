@@ -1,5 +1,7 @@
 # Object Storage Choice: Cloudflare R2 vs UploadThing
 
+> **Repository status (2026-04):** The **running codebase** uses **Cloudinary** for point photos (`backend/src/lib/photoUrl.ts`, `docs/cloudinary-setup.md`). This document is **retained as the historical analysis** that compared UploadThing with an R2 / S3-style flow early in design. Paragraphs below that reference `plan.md`, `photoUrl.ts`, or `package.json` describe that **earlier** plan, not the current implementation.
+
 Scope: this analysis covers the **single decision** of where to store user-
 uploaded point photos for the `pern-map-pins-26` project (feature
 `001-map-world-points`). It is not a general comparison of the two
@@ -9,16 +11,13 @@ services.
 
 The feature requires that signed-in users attach **at most one photo**
 per point (FR-004). Photos are publicly readable for public points, and
-must be addressable from the map view. The current plan
-(`specs/001-map-world-points/plan.md`, `research.md`, `data-model.md`,
-`contracts/openapi.yaml`) is built around an S3-compatible flow:
+must be addressable from the map view. **Originally**, the written plan
+(`specs/001-map-world-points/plan.md`, `research.md`, …) assumed an **S3-compatible** flow:
 
-- Backend issues a **presigned PUT URL** (`POST /api/points/{id}/photo-upload`)
-- Frontend uploads the file directly to object storage
-- DB stores `points.photo_key`; the public URL is derived as
-  `${R2_PUBLIC_BASE_URL}/${photo_key}` in `backend/src/lib/photoUrl.ts`
-- `@aws-sdk/client-s3` is already installed in `backend/package.json`
-  (task T002 closed)
+- Backend would issue a **presigned PUT URL** (`POST /api/points/{id}/photo-upload`)
+- Frontend would upload the file directly to object storage
+- DB would store `points.photo_key`; the public URL would be derived from a **public base URL** + key
+- **That approach was not shipped** — we adopted Cloudinary instead; see `research.md` and `plan.md` today.
 
 ## How each option models the problem
 
@@ -49,7 +48,7 @@ must be addressable from the map view. The current plan
 | Criterion | Cloudflare R2 | UploadThing |
 |---|---|---|
 | Time to wire up from zero | ~15 min (bucket + token + CORS + presign endpoint) | ~10 min (app + token + FileRouter + client component) |
-| SDK already in `package.json` | Yes (`@aws-sdk/client-s3`) | No (would add `uploadthing` + `@uploadthing/react`) |
+| SDK already in `package.json` | Was planned early (T002); **not present now** — repo uses Cloudinary only | No (would add `uploadthing` + `@uploadthing/react`) |
 | Matches current plan / contract | Yes (`research.md`, `data-model.md`, OpenAPI, T038/T044/T047) | No — requires updates to `research.md`, `data-model.md`, `contracts/openapi.yaml`, and several tasks |
 | Upload model | Browser → R2 directly via presigned PUT | Browser → UploadThing edge → their storage |
 | Where files live | Our R2 bucket in our Cloudflare account | UploadThing's infrastructure (URLs on `ufs.sh` / `utfs.io`) |
@@ -127,8 +126,7 @@ wins on egress economics and portability once the project is past the
   (semantics of the stored value change), `contracts/openapi.yaml`
   (the `photo-upload` operation signature is different), and T038 /
   T044 / T047 in `tasks.md`.
-- **`@aws-sdk/client-s3` is already a dependency** — no new packages.
-  Task T002 explicitly added it for R2.
+- **Early scaffold once added `@aws-sdk/client-s3` for an R2 path; that dependency was removed** when the project standardized on Cloudinary. No S3 client ships in `backend/package.json` today.
 - **Free egress matters.** A public map page that loads many pin
   photos puts cumulative bandwidth on the storage provider. R2's
   zero-egress policy makes this a non-issue forever; UploadThing
@@ -191,8 +189,7 @@ method to a Cloudflare account is acceptable for this project.
 **If a card on file is acceptable**, **stay on Cloudflare R2**. Three
 reasons, in order of weight:
 
-1. **Plan alignment.** The spec, data model, contract, and a handful
-   of tasks (T002, T038, T044, T047) already encode the R2 / S3 flow.
+1. **Plan alignment (historical).** At the time of writing, the spec, data model, contract, and tasks (T002, T038, T044, T047) still described an R2 / S3 flow. **The codebase has since moved to Cloudinary**; align OpenAPI/tasks with `docs/cloudinary-setup.md`.
    Switching is a documentation refactor as much as a code change.
 2. **Cost predictability for a public map.** Free egress is the right
    default for an app whose primary surface is a public map that

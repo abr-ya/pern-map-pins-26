@@ -1,5 +1,7 @@
 # Object Storage Alternatives for `pern-map-pins-26`
 
+> **Implementation note:** The **repository uses Cloudinary** for point photos. The comparison below (including R2, UploadThing, Storj, etc.) is **decision support material**; Cloudflare R2 and other S3-style options are **not** integrated in application code.
+
 This document widens the original
 [R2 vs UploadThing](./r2-vs-uploadthing.md) comparison to other
 services that satisfy two requirements:
@@ -87,9 +89,9 @@ Object storage that ships as part of the Supabase platform.
 
 - **Free tier:** 1 GB storage and 5 GB egress per month.
 - **Card required on free tier:** **No**.
-- **Mental model:** **S3-compatible** API since 2024. Our existing
-  `@aws-sdk/client-s3` works with their endpoint and credentials, so
-  the code is structurally identical to the R2 plan.
+- **Mental model:** **S3-compatible** API since 2024. A project **could**
+  add `@aws-sdk/client-s3` and point it at Supabase’s S3 endpoint
+  (this repo **does not** — it uses Cloudinary only).
 - **Built-in transforms:** basic image transformations available,
   weaker than Cloudinary or ImageKit.
 - **CDN:** included for public buckets.
@@ -136,9 +138,9 @@ S3-compatible gateway.
   the most generous of the candidates here for raw quota.
 - **Card required on free tier:** **No**. Sign-up uses email plus
   identity verification; no card is required to use the free quota.
-- **Mental model:** **S3-compatible** via Storj's S3 gateway. Same
-  presign flow as R2; our `@aws-sdk/client-s3` works with the gateway
-  endpoint and access keys.
+- **Mental model:** **S3-compatible** via Storj's S3 gateway — same
+  presign pattern as R2; would use `@aws-sdk/client-s3` against the
+  gateway (**not** present in this codebase).
 - **Built-in transforms:** **None**. Storj is a pure object store; if
   we want thumbnails we either store two files or add an image worker
   in front (e.g. Cloudflare Workers / `imgproxy`).
@@ -174,13 +176,13 @@ current quotas on each provider's pricing page before committing.
 | Free storage | 10 GB | 2 GB | ~25 GB (via credits) | 20 GB | 1 GB | 5 GB | **25 GB** |
 | Free bandwidth | unlimited (free egress) | 100 GB / mo | ~25 GB (via credits) | 20 GB / mo | 5 GB / mo | 1 GB / day | 25 GB / mo |
 | API style | S3-compatible | proprietary SDK | proprietary REST + SDK | proprietary REST + SDK | **S3-compatible** | Firebase SDK | **S3-compatible** |
-| Already in `package.json` | Yes (`@aws-sdk/client-s3`) | No | No | No | reuses `@aws-sdk/client-s3` | No | reuses `@aws-sdk/client-s3` |
+| Already in `package.json` | No — **Cloudinary only** in this repo (no `@aws-sdk/client-s3`) | No | No | No | No (unless added) | No | No |
 | URL-based image transforms | None | basic | **Strong** | **Strong** | basic | None | None |
 | CDN included | Yes | Yes | Yes | Yes | Yes | Yes | Yes (Linksharing) |
 | Tail latency profile | Centralized, low | Centralized, low | Centralized, low | Centralized, low | Centralized, low | Centralized, low | Distributed, **higher variance** |
 | Vendor lock-in | Low | High | Moderate | Moderate | Low | High | Low |
 | Suits Clerk auth | Manual signing | Built-in middleware | Manual signing | Manual signing | Manual signing | Awkward (custom tokens) | Manual signing |
-| Plan-document churn if adopted | None (already planned) | T038 / T044 / T047, research, data-model, OpenAPI | T038 / T044 / T047, research, data-model, OpenAPI | T038 / T044 / T047, research, data-model, OpenAPI | Mostly env vars (S3 endpoint), minor docs | T038 / T044 / T047, research, data-model, OpenAPI | Mostly env vars (S3 endpoint), minor docs |
+| Plan-document churn if adopted | N/A — **R2 not adopted** | T038 / T044 / T047, research, data-model, OpenAPI | T038 / T044 / T047, research, data-model, OpenAPI | T038 / T044 / T047, research, data-model, OpenAPI | Mostly env vars (S3 endpoint), minor docs | T038 / T044 / T047, research, data-model, OpenAPI | Mostly env vars (S3 endpoint), minor docs |
 | Drawback for our specific project | Card required to activate | Smallest free tier; tight lock-in | Credit-based quota can be drained by a single viral page | Smaller ecosystem than Cloudinary | 1 GB free is tight; redundant with our existing stack (Neon + Clerk) | 1 GB/day download cap; no transforms; awkward with Clerk | Higher tail latency; no transforms; ID verification |
 
 ## How they rank for our specific kind of app
@@ -188,10 +190,12 @@ current quotas on each provider's pricing page before committing.
 Public map with many small images per page, one image per record,
 solo developer, pet-project budget.
 
-1. **Cloudflare R2** — best technical fit overall, but only if a card
+**Shipped in this repo:** **Cloudinary** (item 2 below). **Cloudflare R2** (item 1) was evaluated and **not** integrated.
+
+1. **Cloudflare R2** — best technical fit among **S3-style** stores overall, but only if a card
    on file is acceptable.
-2. **Cloudinary** — best "no card" fit. The URL-based thumbnail
-   pipeline alone removes work that would otherwise live in the app.
+2. **Cloudinary** — best "no card" fit; **this is what we implemented.**
+   URL-based transforms suit thumbnails on a public map without extra pipelines.
 3. **ImageKit** — strong runner-up to Cloudinary for the same
    reasons; pick it if Cloudinary's dashboard or pricing model feels
    too heavyweight.
@@ -211,27 +215,23 @@ solo developer, pet-project budget.
 
 ## Recommendation
 
-**If a payment method on Cloudflare is acceptable**, keep Cloudflare
-R2 as already planned in
-[`specs/001-map-world-points/research.md`](../specs/001-map-world-points/research.md).
-The plan, data model, contract, and existing dependencies are already
-aligned with R2.
+**Implemented stack:** **`Cloudinary`** for point photos (see
+[`cloudinary-setup.md`](./cloudinary-setup.md) and
+[`research.md`](../specs/001-map-world-points/research.md)). **Cloudflare
+R2 is not used** in application code or `package.json`.
 
-**If "no card" is a hard requirement at this stage**, switch to
-**Cloudinary**. The combination of a generous free tier, built-in
-URL-based image transformations, mature CDN, and a small auth-aware
-signing endpoint on our Express backend matches our actual needs
-better than either UploadThing or any of the storage-only
-alternatives. The migration cost is documented under "What changes
-if we switch" in [`r2-vs-uploadthing.md`](./r2-vs-uploadthing.md);
-the same set of edits applies, with `R2_*` replaced by
-`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`,
-`CLOUDINARY_API_SECRET` in env vars.
+**If we were choosing again today (hypothetical):**
 
-UploadThing remains a reasonable choice purely on frontend ergonomics
-if neither R2 nor Cloudinary works for non-technical reasons; Storj
-is the right pick if we ever need maximum raw S3-compatible storage
-without paying and are willing to handle thumbnails ourselves.
+- **Cloudflare R2** — strongest technical fit among S3-compatible
+  stores *if* a card on file is acceptable and you want zero egress
+  fees on a public map.
+- **Cloudinary** — best **no-card** fit for a thumbnail-heavy public
+  map; what we actually shipped.
+- **UploadThing**, **Storj**, **ImageKit**, etc. — remain documented
+  above for context; none are required by the current codebase.
+
+Historical notes on migrating *from* an R2-shaped plan appear in
+[`r2-vs-uploadthing.md`](./r2-vs-uploadthing.md) (archival).
 
 ---
 
