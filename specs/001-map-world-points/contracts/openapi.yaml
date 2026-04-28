@@ -12,6 +12,8 @@ servers:
 tags:
   - name: public
   - name: points
+  - name: folders
+  - name: tags
   - name: me
   - name: meta
   - name: auth
@@ -93,6 +95,59 @@ components:
         photoKey:
           type: string
           description: Cloudinary `public_id` to persist on `points.photo_key` after the client upload completes successfully.
+
+    PointUpdate:
+      type: object
+      minProperties: 1
+      description: Partial update; at least one field required.
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, maxLength: 5000, nullable: true }
+        folderId: { type: string, format: uuid, nullable: true }
+        visibility: { type: string, enum: [public, group_only] }
+        groupId: { type: string, format: uuid, nullable: true }
+        tagIds: { type: array, items: { type: string, format: uuid } }
+        photoKey:
+          type: string
+          minLength: 1
+          maxLength: 2048
+          nullable: true
+          description: Must match the canonical public_id from photo-upload (single image per point).
+
+    Folder:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        groupId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    FolderCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        groupId: { type: string, format: uuid, nullable: true }
+
+    FolderUpdate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+
+    Tag:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+
+    TagCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
 
 paths:
   /health:
@@ -265,7 +320,113 @@ paths:
         '200': { description: Updated }
         '403': { description: Not a member of group }
 
+  /folders:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [folders]
+      summary: List organization folders for the current user
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Folder' } }
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [folders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FolderCreate' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Folder' }
+
+  /folders/{folderId}:
+    patch:
+      security: [{ clerkBearer: [] }]
+      tags: [folders]
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FolderUpdate' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Folder' }
+        '404': { description: Not found }
+    delete:
+      security: [{ clerkBearer: [] }]
+      tags: [folders]
+      parameters:
+        - name: folderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+        '404': { description: Not found }
+
+  /tags:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [tags]
+      summary: List global tags and current user's tags
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Tag' } }
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [tags]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TagCreate' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tag' }
+
   /points:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [points]
+      summary: List current user's points
+      parameters:
+        - name: folderId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Point' } }
     post:
       security: [{ clerkBearer: [] }]
       tags: [points]
@@ -302,6 +463,33 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/PhotoUpload' }
+        '403': { description: Not author }
+        '404': { description: Not found }
+
+  /points/{pointId}:
+    patch:
+      security: [{ clerkBearer: [] }]
+      tags: [points]
+      summary: Update own point (partial)
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PointUpdate' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Point' }
+        '400':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
         '403': { description: Not author }
         '404': { description: Not found }
 

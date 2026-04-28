@@ -55,6 +55,33 @@ function readCloudinaryEnv(): {
 }
 
 /**
+ * Canonical Cloudinary `public_id` stored in `points.photo_key` for this point.
+ * Used to reject attaching a second asset path (FR-004).
+ */
+export function canonicalPointPhotoKey(pointId: string): string {
+  const { uploadFolder } = readCloudinaryEnv();
+  return `${uploadFolder}/${pointId}`;
+}
+
+/** Allow `null`/`undefined` to clear; otherwise must match {@link canonicalPointPhotoKey}. */
+export function assertPhotoKeyMatchesPoint(
+  pointId: string,
+  photoKey: string | null | undefined,
+): void {
+  if (photoKey === undefined || photoKey === null) {
+    return;
+  }
+  const expected = canonicalPointPhotoKey(pointId);
+  if (photoKey !== expected) {
+    throw new AppError(
+      'VALIDATION_ERROR',
+      'photoKey must be the Cloudinary public_id issued for this point (at most one image per point)',
+      400,
+    );
+  }
+}
+
+/**
  * Build signed direct-upload fields for one point image.
  * Uses `folder` = `CLOUDINARY_UPLOAD_FOLDER` and `public_id` = point UUID so
  * the stored `photo_key` is `{folder}/{pointId}` (Cloudinary `public_id`).

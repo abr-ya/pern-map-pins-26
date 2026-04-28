@@ -5,7 +5,11 @@ import App from './App';
 
 vi.mock('@clerk/react', () => ({
   ClerkProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  useAuth: () => ({ isLoaded: true, isSignedIn: false }),
+  useAuth: () => ({
+    isLoaded: true,
+    isSignedIn: false,
+    getToken: async () => null,
+  }),
   UserButton: () => null,
   SignIn: () => null,
   SignUp: () => null,

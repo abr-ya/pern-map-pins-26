@@ -2,18 +2,10 @@ import L from 'leaflet';
 import { useMemo } from 'react';
 import { Marker, TileLayer } from 'react-leaflet';
 import type { PublicPoint } from '../../lib/pointTypes';
+import { makeGuestPinIcon } from './mapPins';
 import { useGuestMapBounds } from './useGuestMapBounds';
 
 const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-
-function makePinIcon(pointId: string) {
-  return L.divIcon({
-    className: 'guest-map-pin',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-    html: `<div data-testid="map-pin" data-point-id="${pointId}" style="width:12px;height:12px;border-radius:9999px;background:#3b82f6;border:2px solid #1d4ed8;box-sizing:border-box" aria-hidden="true"></div>`,
-  });
-}
 
 function GuestMapAutofit({ points }: { points: PublicPoint[] }) {
   const latLngs = useMemo(
@@ -24,14 +16,17 @@ function GuestMapAutofit({ points }: { points: PublicPoint[] }) {
   return null;
 }
 
-/** Guest layer: OSM tiles, markers for the latest public points only, and bounds fitting. */
+/**
+ * Guest “latest five” layer: OSM tiles, plain markers (≤5), bounds fitting.
+ * Heavier clustering for many markers is used on signed-in layers in MapPage.
+ */
 export function GuestMapLayer({ points }: { points: PublicPoint[] }) {
   return (
     <>
       <TileLayer attribution={osmAttribution} url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <GuestMapAutofit points={points} />
       {points.map((p) => (
-        <Marker key={p.id} position={[p.latitude, p.longitude]} icon={makePinIcon(p.id)} />
+        <Marker key={p.id} position={[p.latitude, p.longitude]} icon={makeGuestPinIcon(p.id)} />
       ))}
     </>
   );

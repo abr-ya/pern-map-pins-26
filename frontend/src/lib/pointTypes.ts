@@ -14,3 +14,26 @@ export type PublicPoint = {
   averageRating: number | null;
   myRating: number | null;
 };
+
+export type FolderDto = {
+  id: string;
+  name: string;
+  groupId: string | null;
+  createdAt: string;
+};
+
+export type TagDto = {
+  id: string;
+  name: string;
+};
+
+export type PhotoUploadPayload = {
+  uploadUrl: string;
+  apiKey: string;
+  timestamp: number;
+  signature: string;
+  uploadPreset: string;
+  cloudName: string;
+  folder: string;
+  photoKey: string;
+};

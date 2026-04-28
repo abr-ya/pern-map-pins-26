@@ -111,19 +111,19 @@
 
 - [X] T037 [US3] Implement `POST /api/points` in `backend/src/routes/points.ts` with Zod `PointCreate`, `geo` validation, and persistence in `backend/src/services/pointWriteService.ts` per [contracts/openapi.yaml](./contracts/openapi.yaml) `/points`
 - [X] T038 [P] [US3] Implement `POST /api/points/{pointId}/photo-upload` in `backend/src/routes/points.ts` with **Cloudinary** signed direct-upload params in `backend/src/lib/cloudinaryUpload.ts` (or equivalent) and size/content-type policy in `backend/src/middleware/uploadPolicy.ts`
-- [ ] T039 [P] [US3] Add folder CRUD and ownership checks in `backend/src/routes/folders.ts` and `backend/src/services/folderService.ts` per [data-model.md](./data-model.md) `folders`
-- [ ] T040 [P] [US3] Add tag and `point_tags` handling in `backend/src/routes/tags.ts` and `backend/src/services/tagService.ts` with assignment from point create/update
-- [ ] T041 [US3] Add `frontend/src/features/points/CreatePointForm.tsx` with `react-hook-form` + Zod, triggered from map click in `frontend/src/features/map/MapPage.tsx`, calling `POST /api/points` and optional `photo-upload` after save
-- [ ] T042 [P] [US3] Add `frontend/src/features/folders/FolderList.tsx` and map filter state (folder id in URL or context) in `frontend/src/features/map/MapPage.tsx` wiring to a `GET` API for the signed-in user’s points filtered by `folderId` in `backend/src/routes/pointsQuery.ts` (or extend `backend/src/routes/points.ts`) — add paths to `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml`
-- [ ] T043 [US3] Add marker list/cluster pattern in `frontend/src/features/map/ClusteredMarkers.tsx` (or `leaflet.markercluster`) to satisfy overlap edge case in [spec.md](./spec.md) when many markers exist
-- [ ] T044 [P] [US3] Enforce at most one `photo_key` per point; allow replace via new Cloudinary signed upload + update in `backend/src/services/pointWriteService.ts` and `CreatePointForm.tsx`
+- [X] T039 [P] [US3] Add folder CRUD and ownership checks in `backend/src/routes/folders.ts` and `backend/src/services/folderService.ts` per [data-model.md](./data-model.md) `folders`
+- [X] T040 [P] [US3] Add tag and `point_tags` handling in `backend/src/routes/tags.ts` and `backend/src/services/tagService.ts` with assignment from point create/update
+- [X] T041 [US3] Add `frontend/src/features/points/CreatePointForm.tsx` with `react-hook-form` + Zod, triggered from map click in `frontend/src/features/map/MapPage.tsx`, calling `POST /api/points` and optional `photo-upload` after save
+- [X] T042 [P] [US3] Add `frontend/src/features/folders/FolderList.tsx` and map filter state in `frontend/src/features/map/MapPage.tsx` wiring to `GET /api/points?folderId=` (`backend/src/services/pointQueryService.ts`) — paths in `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml`
+- [X] T043 [US3] Add marker list/cluster pattern in `frontend/src/features/map/ClusteredMarkers.tsx` (or `leaflet.markercluster`) to satisfy overlap edge case in [spec.md](./spec.md) when many markers exist
+- [X] T044 [P] [US3] Enforce at most one `photo_key` per point; allow replace via new Cloudinary signed upload + update in `backend/src/services/pointWriteService.ts` and `CreatePointForm.tsx`
 
 ### Tests for User Story 3
 
 - [X] T045 [P] [US3] Add `backend/src/lib/geo.test.ts` with Vitest: rejects lat/lng out of WGS84 range (align with `backend/src/lib/geo.ts` and 400s from `POST /api/points`)
-- [ ] T046 [P] [US3] Add `backend/tests/integration/points.create.test.ts` with Supertest + authenticated user fixture: `POST /api/points` returns 201; invalid coordinates return **400** with contract error shape; second image attempt rejected per **FR-004**
-- [ ] T047 [P] [US3] Add `backend/tests/integration/photo-upload.test.ts` and `backend/tests/integration/folders-tags.test.ts` (or one `points.features.test.ts`): **Cloudinary** upload authorize-only; folder CRUD and tag assign return expected status codes
-- [ ] T048 [P] [US3] Add `frontend/src/features/points/CreatePointForm.test.tsx` (Testing Library + user-event): required title, validation messages, map-click coordinate passthrough (mocked)
+- [X] T046 [P] [US3] Add `backend/tests/integration/points.create.test.ts` with Supertest + authenticated user fixture: `POST /api/points` returns 201; invalid coordinates return **400** with contract error shape; second image attempt rejected per **FR-004** *(FR-004 enforced via `PATCH` canonical `photoKey`; see `backend/tests/integration/points.patch.test.ts` + `assertPhotoKeyMatchesPoint`)*
+- [X] T047 [P] [US3] Add `backend/tests/integration/photo-upload.test.ts` and `backend/tests/integration/folders-tags.test.ts` (or one `points.features.test.ts`): **Cloudinary** upload authorize-only; folder CRUD and tag assign return expected status codes
+- [X] T048 [P] [US3] Add `frontend/src/features/points/CreatePointForm.test.tsx` (Testing Library + user-event): required title, validation messages, map-click coordinate passthrough (mocked)
 
 **Checkpoint**: Signed-in user can create, label, and organize points with optional photo (**Cloudinary**) and see folder-filtered map; US3 test suite green
 

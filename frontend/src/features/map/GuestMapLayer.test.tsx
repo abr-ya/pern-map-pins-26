@@ -1,5 +1,5 @@
 import { render, waitFor } from '@testing-library/react';
-import { MapContainer } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import { describe, expect, it } from 'vitest';
 import type { PublicPoint } from '../../lib/pointTypes';
 import { GuestMapLayer } from './GuestMapLayer';
@@ -29,6 +29,10 @@ function renderWithMap(points: PublicPoint[]) {
         zoom={2}
         scrollWheelZoom={false}
       >
+        <TileLayer
+          attribution=""
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
         <GuestMapLayer points={points} />
       </MapContainer>
     </div>,

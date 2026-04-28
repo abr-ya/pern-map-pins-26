@@ -20,3 +20,106 @@ export async function apiGet<T>(path: string, init?: RequestInit): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
+
+export async function apiGetJson<T>(path: string, token: string | null, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { accept: 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(apiUrl(path), {
+    ...init,
+    method: 'GET',
+    headers: { ...headers, ...init?.headers },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function apiPostJson<T>(
+  path: string,
+  token: string | null,
+  body: unknown,
+  init?: RequestInit,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    accept: 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(apiUrl(path), {
+    ...init,
+    method: 'POST',
+    headers: { ...headers, ...init?.headers },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+/** POST without JSON body (e.g. photo-upload authorize). */
+export async function apiPostEmpty<T>(path: string, token: string | null, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { accept: 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(apiUrl(path), {
+    ...init,
+    method: 'POST',
+    headers: { ...headers, ...init?.headers },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function apiPatchJson<T>(
+  path: string,
+  token: string | null,
+  body: unknown,
+  init?: RequestInit,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    accept: 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(apiUrl(path), {
+    ...init,
+    method: 'PATCH',
+    headers: { ...headers, ...init?.headers },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function apiDelete(path: string, token: string | null, init?: RequestInit): Promise<void> {
+  const headers: Record<string, string> = { accept: 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(apiUrl(path), {
+    ...init,
+    method: 'DELETE',
+    headers: { ...headers, ...init?.headers },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+}
