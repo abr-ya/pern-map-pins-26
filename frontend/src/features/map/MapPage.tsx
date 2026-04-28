@@ -5,6 +5,7 @@ import { MapContainer, useMapEvents } from 'react-leaflet';
 import { apiGet, apiGetJson } from '../../lib/api';
 import type { FolderDto, PublicPoint, TagDto } from '../../lib/pointTypes';
 import { FolderList } from '../folders/FolderList';
+import { CreateFolderForm } from '../folders/CreateFolderForm';
 import { CreatePointForm } from '../points/CreatePointForm';
 import { ClusteredMarkers } from './ClusteredMarkers';
 import { GuestMapLayer } from './GuestMapLayer';
@@ -69,7 +70,12 @@ export function MapPage() {
     enabled: Boolean(isSignedIn),
   });
 
-  const { data: myPointsData } = useQuery({
+  const {
+    data: myPointsData,
+    isFetching: myPointsFetching,
+    isError: myPointsError,
+    error: myPointsErr,
+  } = useQuery({
     queryKey: ['points', 'mine', folderId] as const,
     queryFn: async () => {
       const token = await getToken();
@@ -86,12 +92,35 @@ export function MapPage() {
   const folders = useMemo(() => foldersData?.items ?? [], [foldersData?.items]);
   const tags = useMemo(() => tagsData?.items ?? [], [tagsData?.items]);
 
+  const selectedFolderLabel = useMemo(() => {
+    if (folderId === null) {
+      return 'All my points';
+    }
+    return folders.find((f) => f.id === folderId)?.name ?? 'Folder';
+  }, [folderId, folders]);
+
   const myIconFor = useMemo(() => (id: string) => makeMyPinIcon(id), []);
 
   const folderSlot = isSignedIn ? (
     <>
       <p className="mb-2 text-xs text-slate-500">Filter your markers on the map</p>
       <FolderList folders={folders} selectedFolderId={folderId} onSelectFolder={setFolderId} />
+      <p className="mt-2 text-xs text-slate-600" aria-live="polite">
+        {myPointsFetching ? (
+          'Loading your points…'
+        ) : myPointsError ? (
+          <span className="text-red-600">{myPointsErr instanceof Error ? myPointsErr.message : 'Could not load your points'}</span>
+        ) : (
+          <>
+            <span className="font-medium text-slate-800">{selectedFolderLabel}</span>
+            {' — '}
+            {myPoints.length === 0
+              ? 'no pins in this view (assign a folder when creating a point, or pick “All my points”).'
+              : `${myPoints.length} green pin${myPoints.length === 1 ? '' : 's'} on the map.`}
+          </>
+        )}
+      </p>
+      <CreateFolderForm onCreated={(f) => setFolderId(f.id)} />
       <p className="mt-3 text-xs text-slate-500">Click the map to add a point.</p>
     </>
   ) : null;
@@ -101,9 +130,7 @@ export function MapPage() {
       <div className="relative min-h-[55vh] flex-1 md:min-h-0">
         <MapContainer className="z-0 h-full w-full" center={[20, 0]} zoom={2} scrollWheelZoom>
           <GuestMapLayer points={items} />
-          {isSignedIn && myPoints.length > 0 ? (
-            <ClusteredMarkers points={myPoints} iconFor={myIconFor} />
-          ) : null}
+          {isSignedIn ? <ClusteredMarkers points={myPoints} iconFor={myIconFor} /> : null}
           {isSignedIn ? (
             <MapClickToCreate
               enabled={createOpen === null}

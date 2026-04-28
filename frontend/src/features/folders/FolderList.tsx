@@ -14,8 +14,11 @@ export function FolderList({
       <div className="font-medium text-slate-700">My folders</div>
       <button
         type="button"
-        className={`block w-full rounded px-2 py-1 text-left hover:bg-slate-100 ${
-          selectedFolderId === null ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600'
+        aria-current={selectedFolderId === null ? 'true' : undefined}
+        className={`block w-full rounded px-2 py-1.5 text-left transition-colors hover:bg-slate-100 ${
+          selectedFolderId === null
+            ? 'bg-sky-50 font-semibold text-slate-900 ring-2 ring-sky-400 ring-inset'
+            : 'text-slate-600'
         }`}
         onClick={() => onSelectFolder(null)}
       >
@@ -25,8 +28,11 @@ export function FolderList({
         <button
           key={f.id}
           type="button"
-          className={`block w-full rounded px-2 py-1 text-left hover:bg-slate-100 ${
-            selectedFolderId === f.id ? 'bg-slate-100 font-semibold text-slate-900' : 'text-slate-600'
+          aria-current={selectedFolderId === f.id ? 'true' : undefined}
+          className={`block w-full rounded px-2 py-1.5 text-left transition-colors hover:bg-slate-100 ${
+            selectedFolderId === f.id
+              ? 'bg-sky-50 font-semibold text-slate-900 ring-2 ring-sky-400 ring-inset'
+              : 'text-slate-600'
           }`}
           onClick={() => onSelectFolder(f.id)}
         >
