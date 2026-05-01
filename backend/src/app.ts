@@ -6,7 +6,9 @@ import { requestId } from './middleware/requestId.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { createDocsRouter } from './routes/docs.js';
 import { foldersRouter } from './routes/folders.js';
+import { groupsRouter } from './routes/groups.js';
 import { healthRouter } from './routes/health.js';
+import { mapRouter } from './routes/map.js';
 import { meRouter } from './routes/me.js';
 import { pointsRouter } from './routes/points.js';
 import { publicRouter } from './routes/public.js';
@@ -34,6 +36,8 @@ export function createApp(): express.Express {
   app.use('/api', publicRouter);
   app.use('/api', webhooksRouter);
   app.use('/api', meRouter);
+  app.use('/api', groupsRouter);
+  app.use('/api', mapRouter);
   app.use('/api', foldersRouter);
   app.use('/api', tagsRouter);
   app.use('/api', pointsRouter);

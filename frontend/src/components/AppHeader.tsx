@@ -1,6 +1,7 @@
 import { UserButton, useAuth } from '@clerk/react';
 import { useState } from 'react';
 import { AuthDialog, type AuthDialogMode } from '../features/auth/AuthDialog';
+import { ActiveGroupSwitcher } from '../features/groups/ActiveGroupSwitcher';
 
 /**
  * Top app bar with brand and a Sign in / Create account pair (signed-out)
@@ -27,7 +28,10 @@ export function AppHeader(): JSX.Element {
       <div className="flex items-center gap-2">
         <span className="text-base font-semibold text-slate-900">Points on the Map</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 flex-1 justify-center px-2">
+        {isLoaded && isSignedIn ? <ActiveGroupSwitcher /> : null}
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
         {!isLoaded ? (
           <span className="text-xs text-slate-500">Loading…</span>
         ) : isSignedIn ? (

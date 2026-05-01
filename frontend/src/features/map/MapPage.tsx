@@ -1,6 +1,7 @@
 import { useAuth } from '@clerk/react';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import type { LatLngBounds } from 'leaflet';
+import { useCallback, useMemo, useState } from 'react';
 import { MapContainer, useMapEvents } from 'react-leaflet';
 import { apiGet, apiGetJson } from '../../lib/api';
 import type { FolderDto, PublicPoint, TagDto } from '../../lib/pointTypes';
@@ -10,7 +11,9 @@ import { CreatePointForm } from '../points/CreatePointForm';
 import { ClusteredMarkers } from './ClusteredMarkers';
 import { GuestMapLayer } from './GuestMapLayer';
 import { LatestPointsPanel } from './LatestPointsPanel';
-import { makeMyPinIcon } from './mapPins';
+import { MapBoundsReporter } from './MapBoundsReporter';
+import { OsmTileLayer } from './OsmTileLayer';
+import { makeGuestPinIcon, makeMyPinIcon } from './mapPins';
 
 function MapClickToCreate({
   enabled,
@@ -85,12 +88,45 @@ export function MapPage() {
       const q = folderId ? `?folderId=${encodeURIComponent(folderId)}` : '';
       return apiGetJson<{ items: PublicPoint[] }>(`/api/points${q}`, token);
     },
-    enabled: Boolean(isSignedIn),
+    enabled: Boolean(isSignedIn && folderId !== null),
   });
 
   const myPoints = useMemo(() => myPointsData?.items ?? [], [myPointsData?.items]);
   const folders = useMemo(() => foldersData?.items ?? [], [foldersData?.items]);
   const tags = useMemo(() => tagsData?.items ?? [], [tagsData?.items]);
+
+  const [boundsKey, setBoundsKey] = useState<string | null>(null);
+  const onDebouncedBounds = useCallback((b: LatLngBounds) => {
+    const sw = b.getSouthWest();
+    const ne = b.getNorthEast();
+    setBoundsKey(`${sw.lat},${sw.lng},${ne.lat},${ne.lng}`);
+  }, []);
+
+  const {
+    data: mapPublicData,
+    isFetching: mapPublicFetching,
+    isError: mapPublicError,
+    error: mapPublicErr,
+  } = useQuery({
+    queryKey: ['map', 'public', boundsKey] as const,
+    queryFn: async () => {
+      const token = await getToken();
+      if (!token || boundsKey === null) {
+        throw new Error('no token or bounds');
+      }
+      const [swLat, swLng, neLat, neLng] = boundsKey.split(',').map(Number);
+      const q = new URLSearchParams({
+        southWestLat: String(swLat),
+        southWestLng: String(swLng),
+        northEastLat: String(neLat),
+        northEastLng: String(neLng),
+      });
+      return apiGetJson<{ items: PublicPoint[] }>(`/api/map/public?${q.toString()}`, token);
+    },
+    enabled: Boolean(isSignedIn && folderId === null && boundsKey !== null),
+  });
+
+  const explorePoints = useMemo(() => mapPublicData?.items ?? [], [mapPublicData?.items]);
 
   const selectedFolderLabel = useMemo(() => {
     if (folderId === null) {
@@ -100,13 +136,32 @@ export function MapPage() {
   }, [folderId, folders]);
 
   const myIconFor = useMemo(() => (id: string) => makeMyPinIcon(id), []);
+  const exploreIconFor = useMemo(() => (id: string) => makeGuestPinIcon(id), []);
 
   const folderSlot = isSignedIn ? (
     <>
       <p className="mb-2 text-xs text-slate-500">Filter your markers on the map</p>
       <FolderList folders={folders} selectedFolderId={folderId} onSelectFolder={setFolderId} />
       <p className="mt-2 text-xs text-slate-600" aria-live="polite">
-        {myPointsFetching ? (
+        {folderId === null ? (
+          <>
+            {mapPublicFetching ? (
+              'Loading map pins…'
+            ) : mapPublicError ? (
+              <span className="text-red-600">
+                {mapPublicErr instanceof Error ? mapPublicErr.message : 'Could not load map pins'}
+              </span>
+            ) : (
+              <>
+                <span className="font-medium text-slate-800">{selectedFolderLabel}</span>
+                {' — '}
+                {explorePoints.length === 0
+                  ? 'no pins in this map area (pan or zoom, or create a public point).'
+                  : `${explorePoints.length} pin${explorePoints.length === 1 ? '' : 's'} in view (public + active group if any).`}
+              </>
+            )}
+          </>
+        ) : myPointsFetching ? (
           'Loading your points…'
         ) : myPointsError ? (
           <span className="text-red-600">{myPointsErr instanceof Error ? myPointsErr.message : 'Could not load your points'}</span>
@@ -115,7 +170,7 @@ export function MapPage() {
             <span className="font-medium text-slate-800">{selectedFolderLabel}</span>
             {' — '}
             {myPoints.length === 0
-              ? 'no pins in this view (assign a folder when creating a point, or pick “All my points”).'
+              ? 'no pins in this folder (assign a folder when creating a point).'
               : `${myPoints.length} green pin${myPoints.length === 1 ? '' : 's'} on the map.`}
           </>
         )}
@@ -129,8 +184,17 @@ export function MapPage() {
     <div className="flex h-full min-h-0 w-full flex-col bg-slate-100 md:flex-row">
       <div className="relative min-h-[55vh] flex-1 md:min-h-0">
         <MapContainer className="z-0 h-full w-full" center={[20, 0]} zoom={2} scrollWheelZoom>
-          <GuestMapLayer points={items} />
-          {isSignedIn ? <ClusteredMarkers points={myPoints} iconFor={myIconFor} /> : null}
+          <OsmTileLayer />
+          {!isSignedIn ? <GuestMapLayer points={items} /> : null}
+          {isSignedIn && folderId === null ? (
+            <>
+              <MapBoundsReporter onDebouncedBounds={onDebouncedBounds} />
+              <ClusteredMarkers points={explorePoints} iconFor={exploreIconFor} />
+            </>
+          ) : null}
+          {isSignedIn && folderId !== null ? (
+            <ClusteredMarkers points={myPoints} iconFor={myIconFor} />
+          ) : null}
           {isSignedIn ? (
             <MapClickToCreate
               enabled={createOpen === null}

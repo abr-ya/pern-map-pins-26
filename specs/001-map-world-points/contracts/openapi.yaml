@@ -15,6 +15,7 @@ tags:
   - name: folders
   - name: tags
   - name: me
+  - name: groups
   - name: meta
   - name: auth
     description: Clerk session probes and inbound webhook for user sync (US2).
@@ -135,6 +136,29 @@ components:
       required: [name]
       properties:
         name: { type: string, minLength: 1, maxLength: 200 }
+
+    Group:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    GroupCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+
+    GroupMemberAdd:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: Internal `users.id` (not Clerk id). For dev, obtain from DB or webhook logs.
 
     Tag:
       type: object
@@ -310,15 +334,73 @@ paths:
       tags: [me]
       summary: Set active private group
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [activeGroupId]
               properties:
                 activeGroupId: { type: string, format: uuid, nullable: true }
       responses:
-        '200': { description: Updated }
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  activeGroupId: { type: string, format: uuid, nullable: true }
         '403': { description: Not a member of group }
+
+  /groups:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [groups]
+      summary: List groups the current user belongs to
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Group' } }
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [groups]
+      summary: Create a group (creator becomes a member)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GroupCreate' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Group' }
+
+  /groups/{groupId}/members:
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [groups]
+      summary: Add a member by internal user id (any existing member may invite)
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GroupMemberAdd' }
+      responses:
+        '204': { description: Member added or already present }
+        '403': { description: Caller not in group }
+        '404': { description: Target user not found }
 
   /folders:
     get:

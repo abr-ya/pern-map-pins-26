@@ -1,6 +1,6 @@
-# Quickstart: local development (target)
+# Quickstart: local development
 
-> This describes the **intended** setup once the repository is scaffolded. Adjust paths if the monorepo layout differs.
+> Paths below assume the monorepo layout at repository root (`frontend/`, `backend/`, `e2e/`).
 
 ## Prerequisites
 
@@ -12,11 +12,9 @@
 
 ```bash
 git clone <repo-url>
-cd react-express-map-pins
+cd <repo-root>
 pnpm install
 ```
-
-(Or `npm install` in `frontend/` and `backend/` once created.)
 
 ## 2. Environment variables
 
@@ -84,7 +82,82 @@ curl -s http://localhost:3000/api/health
 pnpm -r test
 ```
 
-## 7. End-to-end tests (Playwright)
+## 7. Groups, active layer, and map viewport (US4)
+
+Authenticated routes use Clerk: send **`Authorization: Bearer <jwt>`** where `<jwt>` is a valid session token from the **same Clerk instance** as `CLERK_SECRET_KEY` on the API. Locally you can grab a token from browser devtools (Network tab when the SPA calls the API) or from `getToken()` in the Clerk-loaded app.
+
+Ensure each account has a row in **`users`** (via Clerk webhook **`user.created`** / user sync), or `/api/me/preferences` and `/api/groups` respond with provisioning errors (`USER_NOT_PROVISIONED`).
+
+### Create a group
+
+The creator is added as the first member.
+
+```bash
+export API=http://localhost:3000
+export TOKEN='<paste-jwt>'
+curl -sS -X POST "$API/api/groups" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Study trip"}'
+# Note the returned group id (UUID).
+```
+
+### Add another member (`userId`)
+
+**v1 onboarding:** existing members invite by **internal** Postgres id from `users.id` (not Clerk id). Lookup the teammate after they have signed up and synced:
+
+```bash
+cd backend && pnpm exec prisma studio   # browse users table
+```
+
+```bash
+export GROUP='<group-uuid>'
+export MEMBER_USERS_ID='<uuid from users.id>'
+curl -sS -X POST "$API/api/groups/$GROUP/members" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"userId\":\"$MEMBER_USERS_ID\"}"
+```
+
+The caller must already be in that group. There is **no invite code** endpoint in this slice; widen later if needed (see `specs/001-map-world-points/research.md`).
+
+### List my groups
+
+```bash
+curl -sS "$API/api/groups" -H "Authorization: Bearer $TOKEN"
+```
+
+### Active group preference
+
+The SPA **Active group for private map layer** control PATCHes this preference. Manually:
+
+```bash
+curl -sS -X PATCH "$API/api/me/preferences" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"activeGroupId":null}'
+# Or set activeGroupId to a group UUID where you are a member; non-membership returns 403.
+```
+
+### Signed-in map: points in viewport
+
+`GET /api/map/public` returns **public** points in the bbox, plus **`group_only`** pins for **`activeGroupId`** only when you are still a member of that group.
+
+Query parameters (**all required** unless `limit`):
+
+- `southWestLat`, `southWestLng`, `northEastLat`, `northEastLng` (WGS84)
+- Optional `limit` (default **500**, max **2000`)
+
+Example (rough world-scale box):
+
+```bash
+curl -sS "$API/api/map/public?southWestLat=-85&southWestLng=-180&northEastLat=85&northEastLng=180&limit=100" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+Swagger for these paths (with other routes) lives at **`GET /api/docs`** when docs are enabled in dev.
+
+## 8. End-to-end tests (Playwright)
 
 E2E tests live in the `e2e/` workspace. They target the **frontend dev server** and mock backend responses with `page.route(...)`, so they do **not** require a running API or database.
 
@@ -109,4 +182,3 @@ Notes:
 - Override the target URL with `E2E_FRONTEND_URL=…` (e.g. against a preview deploy).
 - In CI, retries are enabled and reporters are `github` + `html`; the report path is `e2e/playwright-report/`.
 
-> Until `_implement` is done, this file is a **contract** for the tasks phase.

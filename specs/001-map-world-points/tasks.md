@@ -135,19 +135,19 @@
 
 **Independent test**: Two users see each other’s public points; non-member does not see group-only points; member with **Group A** active does not see **Group B**’s private map layer until switch; “latest five” still excludes private group-only points from the public list.
 
-- [ ] T049 [US4] Expose `GET`/`PATCH /api/me/preferences` in `backend/src/routes/me.ts` for `activeGroupId` with membership validation using `user_preferences` and `group_members` in `backend/src/services/preferencesService.ts` per [contracts/openapi.yaml](./contracts/openapi.yaml) `/me/preferences`
-- [ ] T050 [P] [US4] Add group and membership management endpoints or bootstrap in `backend/src/routes/groups.ts` and `backend/src/services/groupService.ts` per [research.md](./research.md) (admin script, invite code, or seed — document in `specs/001-map-world-points/quickstart.md`)
-- [ ] T051 [US4] Implement `GET /api/map/public` in `backend/src/routes/map.ts` with bbox query parameters per [contracts/openapi.yaml](./contracts/openapi.yaml) `/map/public`, implemented in `backend/src/services/mapPointsService.ts` (public **plus** `group_only` for `activeGroupId` when user is a member)
-- [ ] T052 [P] [US4] Enforce `visibility` and `group_id` on every read/write in `mapPointsService.ts` and `pointWriteService.ts` for **FR-007** and **FR-008**
-- [ ] T053 [US4] Add `frontend/src/features/groups/ActiveGroupSwitcher.tsx` bound to `PATCH /api/me/preferences` and reflect active label in `AppHeader` or map toolbar
-- [ ] T054 [P] [US4] Replace/extend guest-only map layer in `frontend/src/features/map/SignedInMapLayer.tsx` (or refactor `MapPage.tsx`) to load `/api/map/public` for signed-in map with viewport bounds, preserving guest behavior from US1 when session is null
-- [ ] T055 [US4] Update `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml` for any new group or map query parameters
+- [X] T049 [US4] Expose `GET`/`PATCH /api/me/preferences` in `backend/src/routes/me.ts` for `activeGroupId` with membership validation using `user_preferences` and `group_members` in `backend/src/services/preferencesService.ts` per [contracts/openapi.yaml](./contracts/openapi.yaml) `/me/preferences`
+- [X] T050 [P] [US4] Add group and membership management endpoints or bootstrap in `backend/src/routes/groups.ts` and `backend/src/services/groupService.ts` per [research.md](./research.md) (admin script, invite code, or seed — document in `specs/001-map-world-points/quickstart.md`)
+- [X] T051 [US4] Implement `GET /api/map/public` in `backend/src/routes/map.ts` with bbox query parameters per [contracts/openapi.yaml](./contracts/openapi.yaml) `/map/public`, implemented in `backend/src/services/mapPointsService.ts` (public **plus** `group_only` for `activeGroupId` when user is a member)
+- [X] T052 [P] [US4] Enforce `visibility` and `group_id` on every read/write in `mapPointsService.ts` and `pointWriteService.ts` for **FR-007** and **FR-008**
+- [X] T053 [US4] Add `frontend/src/features/groups/ActiveGroupSwitcher.tsx` bound to `PATCH /api/me/preferences` and reflect active label in `AppHeader` or map toolbar
+- [X] T054 [P] [US4] Replace/extend guest-only map layer in `frontend/src/features/map/SignedInMapLayer.tsx` (or refactor `MapPage.tsx`) to load `/api/map/public` for signed-in map with viewport bounds, preserving guest behavior from US1 when session is null
+- [X] T055 [US4] Update `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml` for any new group or map query parameters
 
 ### Tests for User Story 4
 
-- [ ] T056 [P] [US4] Add `backend/tests/integration/me.preferences.test.ts` with Supertest: `PATCH /api/me/preferences` with non-member `activeGroupId` returns **403**; public-only (null) succeeds for authenticated user
-- [ ] T057 [P] [US4] Add `backend/tests/integration/map.public.test.ts` with Supertest: `GET /api/map/public` with bbox returns public points; group-only points appear only for member with that group **active**; other group’s private points **excluded** (seed two groups)
-- [ ] T058 [P] [US4] Add `frontend/src/features/groups/ActiveGroupSwitcher.test.tsx` (Testing Library): calls preference API; active label updates (mocked fetch)
+- [X] T056 [P] [US4] Add `backend/tests/integration/me.preferences.test.ts` with Supertest: `PATCH /api/me/preferences` with non-member `activeGroupId` returns **403**; public-only (null) succeeds for authenticated user
+- [X] T057 [P] [US4] Add `backend/tests/integration/map.public.test.ts` with Supertest: `GET /api/map/public` with bbox returns public points; group-only points appear only for member with that group **active**; other group’s private points **excluded** (seed two groups)
+- [X] T058 [P] [US4] Add `frontend/src/features/groups/ActiveGroupSwitcher.test.tsx` (Testing Library): calls preference API; active label updates (mocked fetch)
 
 **Checkpoint**: Group privacy and active-group semantics match **FR-014** and acceptance scenarios in [spec.md](./spec.md) User Story 4; US4 test suite green
 
