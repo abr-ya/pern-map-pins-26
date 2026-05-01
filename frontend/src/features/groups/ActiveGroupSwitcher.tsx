@@ -1,6 +1,6 @@
 import { useAuth } from '@clerk/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import { apiGetJson, apiPatchJson } from '../../lib/api';
 
 type PreferencesDto = { activeGroupId: string | null };
@@ -9,7 +9,7 @@ type GroupsResponse = {
   items: { id: string; name: string; createdAt: string }[];
 };
 
-export function ActiveGroupSwitcher(): JSX.Element | null {
+export function ActiveGroupSwitcher(): ReactElement | null {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const qc = useQueryClient();
 

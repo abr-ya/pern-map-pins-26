@@ -1,5 +1,5 @@
 import { SignIn, SignUp } from '@clerk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 
 export type AuthDialogMode = 'sign-in' | 'sign-up';
 
@@ -14,10 +14,10 @@ export interface AuthDialogProps {
  * (which already render the "Continue with Google" button when Google OAuth
  * is enabled in the Clerk dashboard — no extra wiring needed; FR-003).
  *
- * `routing="virtual"` keeps the URL stable so the underlying `MapPage`
- * is not unmounted while authenticating (per US2 acceptance criterion 2).
+ * `routing="hash"` avoids path-based redirects for this embedded modal; the SPA
+ * root route stays mounted while authenticating (per US2 acceptance criterion 2).
  */
-export function AuthDialog({ open, initialMode = 'sign-in', onClose }: AuthDialogProps): JSX.Element | null {
+export function AuthDialog({ open, initialMode = 'sign-in', onClose }: AuthDialogProps): ReactElement | null {
   const [mode, setMode] = useState<AuthDialogMode>(initialMode);
 
   useEffect(() => {
@@ -67,9 +67,9 @@ export function AuthDialog({ open, initialMode = 'sign-in', onClose }: AuthDialo
           </button>
         </div>
         {mode === 'sign-in' ? (
-          <SignIn routing="virtual" signUpUrl="" />
+          <SignIn routing="hash" signUpFallbackRedirectUrl="/" fallbackRedirectUrl="/" />
         ) : (
-          <SignUp routing="virtual" signInUrl="" />
+          <SignUp routing="hash" signInFallbackRedirectUrl="/" fallbackRedirectUrl="/" />
         )}
       </div>
     </div>

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { ActiveGroupSwitcher } from './ActiveGroupSwitcher';
 
-const getTokenMock = vi.fn<[], Promise<string | null>>();
+const getTokenMock = vi.fn(async (): Promise<string | null> => 'tok');
 const useAuthMock = vi.fn();
 
 vi.mock('@clerk/react', () => ({

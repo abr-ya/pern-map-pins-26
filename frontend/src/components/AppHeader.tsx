@@ -1,5 +1,5 @@
 import { UserButton, useAuth } from '@clerk/react';
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
 import { AuthDialog, type AuthDialogMode } from '../features/auth/AuthDialog';
 import { ActiveGroupSwitcher } from '../features/groups/ActiveGroupSwitcher';
 
@@ -10,7 +10,7 @@ import { ActiveGroupSwitcher } from '../features/groups/ActiveGroupSwitcher';
  * While the Clerk runtime is loading we render the buttons disabled to avoid
  * a flicker of "Sign in" for users with an existing session.
  */
-export function AppHeader(): JSX.Element {
+export function AppHeader(): ReactElement {
   const { isLoaded, isSignedIn } = useAuth();
   const [dialog, setDialog] = useState<{ open: boolean; mode: AuthDialogMode }>({
     open: false,
@@ -35,7 +35,7 @@ export function AppHeader(): JSX.Element {
         {!isLoaded ? (
           <span className="text-xs text-slate-500">Loading…</span>
         ) : isSignedIn ? (
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
         ) : (
           <>
             <button
