@@ -1,4 +1,4 @@
-name: Test SSH Connection
+name: Test Connection
 
 on:
   workflow_dispatch:  # Запуск вручную из интерфейса GitHub
