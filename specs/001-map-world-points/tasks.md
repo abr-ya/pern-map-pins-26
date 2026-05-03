@@ -1,6 +1,6 @@
 # Tasks: Points on the Map (001-map-world-points)
 
-**Input**: Design documents from `/home/user/full2026/react-express-map-pins/specs/001-map-world-points/`
+**Input**: Design documents from `/home/user/full2026/pern-map-pins-26/specs/001-map-world-points/`
 **Prerequisites**: [plan.md](./plan.md) (required), [spec.md](./spec.md) (required), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/openapi.yaml](./contracts/openapi.yaml)
 
 **Tests**: **Included** per [plan.md](./plan.md) and `.specify/memory/constitution.md` (Principle III). Each user story has an implementation block followed by **Tests for User Story** (Vitest + Supertest for Express; React Testing Library for UI smoke where noted).
@@ -10,7 +10,7 @@
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no blocking dependencies on incomplete tasks in the same batch)
-- **[Story]**: User story from [spec.md](./spec.md) (US1–US5)
+- **[Story]**: User story from [spec.md](./spec.md) (US1–US4 for this feature slice; **US5** and remaining polish live in [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md))
 - Every task includes at least one concrete file path
 
 ## Path Conventions (from [plan.md](./plan.md))
@@ -151,42 +151,7 @@
 
 **Checkpoint**: Group privacy and active-group semantics match **FR-014** and acceptance scenarios in [spec.md](./spec.md) User Story 4; US4 test suite green
 
----
-
-## Phase 7: User Story 5 — Favorites and point engagement (Priority: P3)
-
-**Goal**: Favorites with favorite-folders; point detail with comments and 1–5 rating; guest read-only detail for public points (no comment list; show aggregate rating).
-
-**Independent test**: Guest: open public detail from allowed entry — see title, description, photo, aggregate rating; no comments or write actions. Signed-in: favorites CRUD, comment thread, one rating per user per point, changeable. Matches **FR-009**, **FR-010**, **FR-012**.
-
-- [ ] T059 [US5] Implement `GET /api/public/points/{pointId}` in `backend/src/routes/public.ts` using `publicPointsService.ts` to return 404 for non-visible points and guest-safe `Point` (no `myRating` for guest; omit comments) per [contracts/openapi.yaml](./contracts/openapi.yaml) `/public/points/{pointId}`
-- [ ] T060 [P] [US5] Implement `GET`/`POST /api/points/{pointId}/comments` in `backend/src/routes/comments.ts` with `comments` table and signed-in-only list per [contracts/openapi.yaml](./contracts/openapi.yaml) `/points/{pointId}/comments`
-- [ ] T061 [P] [US5] Implement `PUT /api/points/{pointId}/rating` in `backend/src/routes/ratings.ts` and `backend/src/services/ratingService.ts` with upsert and aggregate average via `backend/src/services/ratingAggregate.ts` for `Point` DTOs
-- [ ] T062 [US5] Add favorites and favorite-folder APIs in `backend/src/routes/favorites.ts` and `backend/src/services/favoriteService.ts` per [data-model.md](./data-model.md) `favorites` and `favorite_folders`; add schemas and paths to `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml` (per contract file note “to be expanded”)
-- [ ] T063 [P] [US5] Build `frontend/src/features/points/PointDetailPanel.tsx` (or `frontend/src/features/points/PointDetailPage.tsx`) with guest vs signed-in UI per **FR-010** and **FR-012**
-- [ ] T064 [P] [US5] Build `frontend/src/features/favorites/FavoritesPanel.tsx` for listing and moving favorites between favorite folders
-- [ ] T065 [US5] Connect marker and list `onClick` in `MapPage.tsx` to open detail route or side panel in `frontend/src/routes/index.tsx` with optional `?pointId=` query
-
-### Tests for User Story 5
-
-- [ ] T066 [P] [US5] Add `backend/tests/integration/public.point-detail.test.ts` with Supertest: guest (no auth) `GET /api/public/points/{id}` returns public fields and aggregate rating; **no** comment thread in payload; 404 for hidden points
-- [ ] T067 [P] [US5] Add `backend/tests/integration/engagement.test.ts` with Supertest: `GET`/`POST` comments and `PUT` rating require auth; favorite add/remove and favorite-folder moves behave per schema (seed users/points)
-- [ ] T068 [P] [US5] Add `frontend/src/features/points/PointDetailPanel.test.tsx` and `frontend/src/features/favorites/FavoritesPanel.test.tsx` (Testing Library): guest shows no comment input; signed-in path mocked for comment/rating/favorites actions
-
-**Checkpoint**: Engagement flows complete; guest detail is read-only for social fields; US5 test suite green
-
----
-
-## Phase 8: Polish & Cross-Cutting Concerns
-
-**Purpose**: End-to-end validation, operability, and spec alignment
-
-- [ ] T069 [P] Walk through `specs/001-map-world-points/quickstart.md` and fix gaps in `backend/package.json` / `frontend/package.json` scripts so `pnpm install`, migrate, and two-server dev run match the doc
-- [ ] T070 Harden `backend/src/routes/docs.ts` and env-based toggles in `backend/src/index.ts` for production (disable or protect Swagger) per [plan.md](./plan.md) and `.specify/memory/constitution.md`
-- [ ] T071 [P] Add top-level `README.md` with pointer to `specs/001-map-world-points/plan.md` and how to run frontend/backend
-- [ ] T072 Verify partial indexes and constraints in `backend/prisma/migrations` (or `@@index` in `schema.prisma`) match “latest five” and FK rules in [data-model.md](./data-model.md) (add follow-up Prisma migration if anything was deferred)
-- [ ] T073 [P] Extend Playwright coverage to **US2** sign-in (`e2e/tests/auth.spec.ts`) and **US3** create-point (`e2e/tests/create-point.spec.ts`) per [plan.md](./plan.md) Constitution Check (E2E recommended for sign-in and create point); use Clerk testing tokens / mocked auth and `page.route` for API where a real DB is not desired
-- [ ] T074 Add GitHub Actions workflow `.github/workflows/e2e.yml` running `pnpm install`, `pnpm --filter e2e exec playwright install --with-deps chromium`, `pnpm test:e2e`; upload `e2e/playwright-report/` as artifact on failure (matches `reporter` setting in `e2e/playwright.config.ts` for CI)
+**Follow-up**: User Story 5 (favorites, comments, ratings, guest detail) and cross-cutting polish are tracked in [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md) (tasks **T059–T074**).
 
 ---
 
@@ -196,8 +161,8 @@
 
 - **Setup (Phase 1)** → no prerequisites
 - **Foundational (Phase 2)** → depends on Setup; **blocks all user stories**
-- **User stories** → all depend on Foundational completion; then prefer **P1 (US1, US2)** before **P2 (US3, US4)** and **P3 (US5)** for risk reduction
-- **Polish (Phase 8)** → after all user stories in scope
+- **User stories** → all depend on Foundational completion; then prefer **P1 (US1, US2)** before **P2 (US3, US4)** for risk reduction
+- **US5 / polish** → see [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md)
 
 ### User Story Dependencies
 
@@ -205,23 +170,21 @@
 - **US2** → after Foundational; no hard dependency on US1 (but product-wise map already exists)
 - **US3** → depends on **US2** (Clerk) for `POST /points` and user-owned folders/tags
 - **US4** → depends on **US2** and **US3** (points and visibility model)
-- **US5** → depends on **US2** and **US3** (points exist; favorites/comments/ratings attach to points). Can proceed in parallel with final US4 polish if teams split work, but map/detail integration should stay consistent
 
 ### Within Each User Story
 
-- **US1–US5**: After implementation tasks, complete **Tests for User Story** (T024–T026, T034–T036, T045–T048, T056–T058, T066–T068) so the story is verified before moving on; integration tests need the app, DB, and auth fixtures from earlier phases
+- **US1–US4**: After implementation tasks, complete **Tests for User Story** (T024–T026, T034–T036, T045–T048, T056–T058) so the story is verified before moving on; integration tests need the app, DB, and auth fixtures from earlier phases
 - **US1**: Backend latest query before guest map markers; DTO/photoUrl parallelizable with list UI
 - **US2**: Webhook and middleware can follow ClerkProvider in either order, but user sync should exist before relying on `users.id` in writes
 - **US3**: Core `POST /points` before photo upload; folders/tags parallel where separate files; T045 can run in parallel with T046–T048 once `geo` and `POST /points` exist
 - **US4**: `preferences` and `map/public` service logic before full UI switcher integration
-- **US5**: Public `GET` detail and aggregates before favorites UI; comments and ratings can parallel in backend
 
 ### Parallel Opportunities
 
 - After Phase 2: **US1** and **US2** can be developed in parallel by different owners (public routes vs Clerk)
 - [P] tasks within a phase: different files, no shared incomplete dependency
 - **US3** folder routes vs **US3** tag routes after point write path exists
-- **US5** comments route vs **US5** rating route after point IDs exist in DB; **US1–US5** test files marked [P] can run in parallel with each other when the corresponding routes/components exist
+- **US1–US4** test files marked [P] can run in parallel when the corresponding routes/components exist
 
 ---
 
@@ -265,23 +228,22 @@
 3. **+ US2** → accounts
 4. **+ US3** → core product (“my points”)
 5. **+ US4** → private groups and full signed-in map
-6. **+ US5** → social layer
-7. **+ Polish** → production operability
+6. **+ US5 + Polish** → [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md)
 
 ### Parallel Team Strategy
 
 1. Shared completion of Phases 1–2
 2. Developer A: US1 (public read path + map) while Developer B: US2 (Clerk + user sync)
 3. Then converge on US3, split backend routes vs frontend forms
-4. US4/US5 as above with API vs UI split
+4. **US4** (this feature); **US5** in follow-up spec above
 
 ---
 
 ## Format Validation (checklist for generators)
 
 - Every line uses `- [ ] T###` with a description containing at least one file path
-- [Story] label present on user-story **implementation and test** tasks: `[US1]` through `[US5]`
-- **Setup / Foundational / Polish** tasks: **no** `[US#]` label
+- [Story] label present on user-story **implementation and test** tasks: `[US1]` through `[US4]` in this document
+- **Setup / Foundational** tasks: **no** `[US#]` label
 - **[P]** only where files and dependencies allow parallel work
 
 ---
@@ -291,3 +253,4 @@
 - Extend `specs/001-map-world-points/contracts/openapi.yaml` (and the served copy) whenever new routes are added; version bump on breaking changes per [plan.md](./plan.md)
 - **Cloudinary**: local dev uses a real dev cloud or skips photo until keys are set; document in `specs/001-map-world-points/quickstart.md`. *R2 is not part of this codebase.*
 - Group membership **onboarding** (invite vs admin) is explicitly flexible in [research.md](./research.md) — implement one path in T050 and document it
+- Deferred **US5 + polish**: [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md)
