@@ -78,20 +78,26 @@ jobs:
               fi
             fi
             cd "$APP"
-
-            # Load nvm and use the correct Node.js version
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm use --lts
-            echo "🔍 Node.js version:"
-            node -v
-            echo "🔍 npm version:"
-            npm -v
-            echo "🔍 pnpm version:"
-            pnpm -v
-
             echo "📂 Deploy directory: $APP"
             git pull --ff-only
+
+            # Load nvm (non-interactive SSH does not read ~/.bashrc). Respect NVM_DIR if already set on the host.
+            export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+            if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+              echo "✖ nvm not found at $NVM_DIR/nvm.sh; install nvm or set NVM_DIR." >&2
+              exit 1
+            fi
+            \. "$NVM_DIR/nvm.sh"
+            # Pull must run before this so `.nvmrc` from the repo exists on the server (matches package.json engines).
+            if [ -f .nvmrc ]; then
+              nvm install
+              nvm use
+            else
+              echo "⚠ No .nvmrc in repo after pull; using Node 20 until .nvmrc is on this branch." >&2
+              nvm install 20
+              nvm use 20
+            fi
+            echo "🔍 node $(node -v) | npm $(npm -v) | pnpm $(command -v pnpm >/dev/null && pnpm -v || echo not yet)"
             if command -v corepack >/dev/null 2>&1; then
               corepack enable
             elif ! command -v pnpm >/dev/null 2>&1; then
