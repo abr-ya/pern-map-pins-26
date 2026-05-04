@@ -116,10 +116,10 @@ jobs:
                 exit 1
               fi
               echo "🔧 pm2 $(pm2 -v)"
-              case "$RESTART_COMMAND" in *--update-env*) ;; *)
+              # Avoid `case`/`;;` here: ssh-action may join lines with `;` and break `case` syntax.
+              if [ "${RESTART_COMMAND#*--update-env}" = "$RESTART_COMMAND" ]; then
                 echo "⚠ RESTART_COMMAND has no --update-env — PM2 may keep an old env; add --update-env to reload Clerk/DB/FRONTEND_URL vars from this deploy." >&2
-              ;;
-              esac
+              fi
               echo "🔄 RESTART_COMMAND"
               export _DEPLOY_RESTART="$RESTART_COMMAND"
               bash -lc '
