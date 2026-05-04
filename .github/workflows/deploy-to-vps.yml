@@ -1,0 +1,68 @@
+name: Deploy to VPS
+
+on:
+  workflow_dispatch: # Manual trigger from the GitHub Actions UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: hip-host-2026-05
+    steps:
+      - name: Test SSH connection
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "✅ SSH connection OK"
+            pwd
+            whoami
+            date
+
+      # Deploy-time env: GitHub Environment Variables (`vars`) and Secrets (`secrets`) are forwarded over SSH via `envs`.
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          # Deploy / runner
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          RESTART_COMMAND: ${{ vars.RESTART_COMMAND }}
+          # App: DB + Vite build
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_CLOUDINARY_CLOUD_NAME: ${{ vars.VITE_CLOUDINARY_CLOUD_NAME }}
+          # App: Express runtime (photo upload signing — see backend/src/lib/cloudinaryUpload.ts)
+          CLOUDINARY_CLOUD_NAME: ${{ vars.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ vars.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ vars.CLOUDINARY_API_SECRET }}
+          CLOUDINARY_UPLOAD_PRESET: ${{ vars.CLOUDINARY_UPLOAD_PRESET }}
+          CLOUDINARY_UPLOAD_FOLDER: ${{ vars.CLOUDINARY_UPLOAD_FOLDER }}
+          # App: Clerk (backend — see backend/.env.example, clerkAuth, webhooks)
+          CLERK_PUBLISHABLE_KEY: ${{ vars.CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
+          envs: DEPLOY_PATH,RESTART_COMMAND,DATABASE_URL,VITE_CLERK_PUBLISHABLE_KEY,VITE_API_URL,VITE_CLOUDINARY_CLOUD_NAME,CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET,CLOUDINARY_UPLOAD_PRESET,CLOUDINARY_UPLOAD_FOLDER,CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,CLERK_WEBHOOK_SECRET
+          script: |
+            set -euo pipefail
+            APP="${DEPLOY_PATH:-/apps/map-pins-26}"
+            cd "$APP"
+            echo "📂 Deploy directory: $APP"
+            git pull --ff-only
+            corepack enable
+            pnpm install --frozen-lockfile
+            export NODE_ENV=production
+            pnpm build
+            pnpm --filter backend exec prisma migrate deploy
+            if [ -n "${RESTART_COMMAND:-}" ]; then
+              echo "🔄 RESTART_COMMAND"
+              bash -lc "$RESTART_COMMAND"
+            else
+              echo "ℹ️ RESTART_COMMAND is unset — restart Node manually (e.g. PM2/systemd)."
+            fi
+            echo "✅ Deploy finished."

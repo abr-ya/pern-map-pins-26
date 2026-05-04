@@ -1,4 +1,5 @@
-const base = import.meta.env.VITE_API_URL.replace(/\/$/, '');
+const raw = import.meta.env.VITE_API_URL ?? '';
+const base = typeof raw === 'string' ? raw.replace(/\/$/, '') : '';
 
 /**
  * Full URL to the JSON API, e.g. `GET ${apiUrl('/api/health')}`.

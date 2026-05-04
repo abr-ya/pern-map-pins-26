@@ -1,5 +1,8 @@
 import cors from 'cors';
 import express from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { clerkAuthMiddleware } from './middleware/clerkAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestId } from './middleware/requestId.js';
@@ -45,6 +48,17 @@ export function createApp(): express.Express {
   const docs = createDocsRouter();
   if (docs) {
     app.use('/api/docs', docs);
+  }
+
+  const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
+  const spaIndex = path.join(publicDir, 'index.html');
+  if (fs.existsSync(spaIndex)) {
+    app.use(express.static(publicDir));
+    app.get(/^(?!\/api(?:\/|$)).*/, (_req, res, next) => {
+      res.sendFile(spaIndex, (err) => {
+        if (err) next(err);
+      });
+    });
   }
 
   app.use((_req, res) => {
