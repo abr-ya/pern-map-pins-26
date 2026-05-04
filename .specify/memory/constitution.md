@@ -1,12 +1,9 @@
 <!--
   Sync Impact Report
-  - Version change: (template placeholders) → 1.0.0
-  - Modified principles: N/A (initial adoption; placeholders → named principles I–V)
-  - Added sections: Technology & Stack, Development Workflow (replacing [SECTION_2_NAME], [SECTION_3_NAME] placeholders)
-  - Removed sections: None
-  - Templates: .specify/templates/plan-template.md ✅ | spec-template.md ✅ | tasks-template.md ✅
-  - Command files: .specify/templates/commands/*.md — not present in repo; extension commands reviewed separately
-  - Follow-up TODOs: None
+  - Version change: 1.0.0 → 1.0.1 (PATCH: Technology & Stack — Express 5 + Prisma ORM 7)
+  - Modified principles: N/A
+  - Templates: .specify/templates/* — N/A
+  - Follow-up: plans/tasks should reference prisma.config + adapter
 -->
 # React Express Map Pins Constitution
 
@@ -35,7 +32,7 @@ The server MUST use **structured, readable logging** for errors and important li
 ## Technology & Stack
 
 - **Client**: React (TypeScript when the project adopts it; align with `plan.md` Technical Context).
-- **Server**: Node.js, Express, documented REST/JSON API.
+- **Server**: Node.js, **Express 5**, documented REST/JSON API; persistence via **Prisma ORM 7** as defined in the active feature `plan.md`.
 - **Maps**: The concrete map library or provider (e.g., Leaflet, Mapbox) is selected per feature plan and recorded in `plan.md`; geospatial behavior MUST follow Principle II.
 - **Persistence**: Databases, files, or external stores are specified per plan; no implicit global state for pins across deployments.
 
@@ -49,4 +46,4 @@ The server MUST use **structured, readable logging** for errors and important li
 
 This constitution supersedes ad-hoc practices for this repository when they conflict. **Amendments** MUST update `.specify/memory/constitution.md`, bump **CONSTITUTION_VERSION** per semantic versioning (MAJOR: incompatible governance or removed principles; MINOR: new principle or material new guidance; PATCH: clarifications and non-semantic edits), and set **Last Amended** to the ISO date of the change. **Ratification** date records original adoption. Pull requests and design reviews SHOULD verify that plans and major changes align with the Core Principles; recurring violations trigger a governance review. Day-to-day development may also reference `.cursor/rules/specify-rules.mdc` and the active feature `plan.md` for context.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-22 | **Last Amended**: 2026-04-22
+**Version**: 1.0.1 | **Ratified**: 2026-04-22 | **Last Amended**: 2026-04-23
