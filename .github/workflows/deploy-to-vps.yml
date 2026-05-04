@@ -23,8 +23,9 @@ jobs:
       # Deploy-time env: Variables and Secrets are forwarded over SSH (`envs`) — available to this shell (`pnpm`, Prisma).
       #
       # PM2: a plain `pm2 restart` replays env from when the process was FIRST started — it does NOT pull every key
-      # from this session. RESTART_COMMAND should include `--update-env` (e.g. `pm2 reload map-pins-api --update-env`)
-      # so Node sees CLERK_*, DATABASE_URL, FRONTEND_URL, Cloudinary vars, etc. Or define env in ecosystem / env_file.
+      # from this session. If the server has no `.env` file and vars come only from this deploy (`envs` below),
+      # RESTART_COMMAND **must** include `--update-env` (e.g. `pm2 reload map-pins-api --update-env`) so DATABASE_URL,
+      # CLERK_*, FRONTEND_URL, Cloudinary, etc. are injected from the SSH session. Alternative: ecosystem `env:` / systemd `Environment=` on the VPS.
       #
       # First deploy: default clone URL uses `GIT_CLONE_URL` or `git@github.com:${GITHUB_REPOSITORY}.git`.
       - name: Deploy to VPS

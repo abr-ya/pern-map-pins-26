@@ -1,0 +1,10 @@
+---
+description: Agent must not run test commands in sandbox; delegate to human
+alwaysApply: true
+---
+
+# Tests: run locally, not by the agent
+
+Do **not** run `npm test`, `pnpm test`, `vitest`, or other test suites from the AI agent shell in this workspace. Vitest and similar runners often **hang or exhaust memory** in the sandbox; assume tests are **human-local only** here.
+
+Instead: tell the user **exactly what to run** (commands, cwd, optional env) and ask them to paste output or failures if troubleshooting is needed.
