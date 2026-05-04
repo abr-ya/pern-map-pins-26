@@ -1,5 +1,6 @@
 import { UserButton, useAuth } from '@clerk/react';
-import { useState, type ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
+import { clerkDebug } from '../lib/clerkDebug';
 import { AuthDialog, type AuthDialogMode } from '../features/auth/AuthDialog';
 import { ActiveGroupSwitcher } from '../features/groups/ActiveGroupSwitcher';
 
@@ -12,6 +13,10 @@ import { ActiveGroupSwitcher } from '../features/groups/ActiveGroupSwitcher';
  */
 export function AppHeader(): ReactElement {
   const { isLoaded, isSignedIn } = useAuth();
+  useEffect(() => {
+    clerkDebug('session', { isLoaded, isSignedIn });
+  }, [isLoaded, isSignedIn]);
+
   const [dialog, setDialog] = useState<{ open: boolean; mode: AuthDialogMode }>({
     open: false,
     mode: 'sign-in',

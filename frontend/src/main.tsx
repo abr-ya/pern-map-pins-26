@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'leaflet/dist/leaflet.css';
 import App from './App';
+import { clerkDebug } from './lib/clerkDebug';
 import { createQueryClient } from './lib/queryClient';
 import './index.css';
 
@@ -28,6 +29,13 @@ if (!clerkPublishableKey) {
       'Sign-in will not work until you set the real key in frontend/.env.',
   );
 }
+
+const keyUsed = clerkPublishableKey ?? CLERK_DEV_PLACEHOLDER;
+clerkDebug('bootstrap', {
+  mode: import.meta.env.MODE,
+  keyPrefix: `${keyUsed.slice(0, 12)}…`,
+  apiOrigin: import.meta.env.VITE_API_URL?.trim() || '(same-origin)',
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
