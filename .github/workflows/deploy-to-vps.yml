@@ -53,8 +53,9 @@ jobs:
           envs: DEPLOY_PATH,RESTART_COMMAND,GITHUB_REPOSITORY,GIT_CLONE_URL,DATABASE_URL,VITE_CLERK_PUBLISHABLE_KEY,VITE_API_URL,VITE_CLOUDINARY_CLOUD_NAME,CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET,CLOUDINARY_UPLOAD_PRESET,CLOUDINARY_UPLOAD_FOLDER,CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,CLERK_WEBHOOK_SECRET
           script: |
             set -euo pipefail
-            APP="${DEPLOY_PATH:-/apps/map-pins-26}"
+            APP="${DEPLOY_PATH:-$HOME/apps/map-pins-26}"
             APP="${APP%/}"
+            echo "📂 Using deploy path: $APP"
             REPO_URL="${GIT_CLONE_URL:-git@github.com:${GITHUB_REPOSITORY}.git}"
             if [ ! -d "$APP/.git" ]; then
               if [ -e "$APP" ] && [ ! -d "$APP" ]; then
@@ -70,7 +71,7 @@ jobs:
                 git clone "$REPO_URL" "$APP"
               else
                 echo "✖ $APP exists, is not empty, and has no .git (first clone needs an empty or new path)." >&2
-                echo "   Often DEPLOY_PATH points at a parent (e.g. /apps) instead of the app leaf (e.g. /apps/map-pins-26)." >&2
+                echo "   Often DEPLOY_PATH points at a parent (e.g. ~/apps) instead of the app leaf (e.g. ~/apps/map-pins-26)." >&2
                 echo "   Contents:" >&2
                 ls -la "$APP" >&2 || true
                 exit 1
