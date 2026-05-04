@@ -88,20 +88,14 @@ jobs:
               exit 1
             fi
             \. "$NVM_DIR/nvm.sh"
-            # Pull must run before this so `.nvmrc` from the repo exists on the server (matches package.json engines).
-            if [ -f .nvmrc ]; then
-              nvm install
-              nvm use
-            else
-              echo "⚠ No .nvmrc in repo after pull; using Node 20 until .nvmrc is on this branch." >&2
-              nvm install 20
-              nvm use 20
-            fi
+            # Pinned Node major for deploy (avoid cwd/.nvmrc); `install` is a no-op when already present.
+            nvm install 24
+            nvm use 24
             echo "🔍 node $(node -v) | npm $(npm -v) | pnpm $(command -v pnpm >/dev/null && pnpm -v || echo not yet)"
             if command -v corepack >/dev/null 2>&1; then
               corepack enable
             elif ! command -v pnpm >/dev/null 2>&1; then
-              echo "✖ corepack and pnpm not found (exit 127). Install Node.js 20+ and ensure corepack is on PATH, or install pnpm (e.g. npm i -g pnpm)." >&2
+              echo "✖ corepack and pnpm not found (exit 127). Install Node.js 24+ and ensure corepack is on PATH, or install pnpm (e.g. npm i -g pnpm)." >&2
               exit 1
             fi
             pnpm install --frozen-lockfile
@@ -109,8 +103,19 @@ jobs:
             pnpm build
             pnpm --filter backend exec prisma migrate deploy
             if [ -n "${RESTART_COMMAND:-}" ]; then
+              if ! command -v pm2 >/dev/null 2>&1; then
+                echo "✖ pm2 not found on PATH after nvm (install e.g. npm i -g pm2 for this Node)." >&2
+                exit 1
+              fi
+              echo "🔧 pm2 $(pm2 -v)"
               echo "🔄 RESTART_COMMAND"
-              bash -lc "$RESTART_COMMAND"
+              export _DEPLOY_RESTART="$RESTART_COMMAND"
+              bash -lc '
+                export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+                [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                nvm use 24
+                eval "$_DEPLOY_RESTART"
+              '
             else
               echo "ℹ️ RESTART_COMMAND is unset — restart Node manually (e.g. PM2/systemd)."
             fi

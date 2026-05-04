@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "build": "pnpm --filter frontend run build && pnpm --filter backend run build",
+    "start": "pnpm --filter backend start",
     "lint": "eslint .",
     "test": "pnpm --filter backend --filter frontend run test",
     "test:e2e": "pnpm --filter e2e run test",
