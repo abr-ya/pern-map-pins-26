@@ -78,9 +78,26 @@ jobs:
               fi
             fi
             cd "$APP"
+
+            # Load nvm and use the correct Node.js version
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use --lts
+            echo "🔍 Node.js version:"
+            node -v
+            echo "🔍 npm version:"
+            npm -v
+            echo "🔍 pnpm version:"
+            pnpm -v
+
             echo "📂 Deploy directory: $APP"
             git pull --ff-only
-            corepack enable
+            if command -v corepack >/dev/null 2>&1; then
+              corepack enable
+            elif ! command -v pnpm >/dev/null 2>&1; then
+              echo "✖ corepack and pnpm not found (exit 127). Install Node.js 20+ and ensure corepack is on PATH, or install pnpm (e.g. npm i -g pnpm)." >&2
+              exit 1
+            fi
             pnpm install --frozen-lockfile
             export NODE_ENV=production
             pnpm build
