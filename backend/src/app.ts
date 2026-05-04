@@ -32,7 +32,15 @@ export function createApp(): express.Express {
   );
   app.use(express.json());
   app.use(requestLogger);
-  if (process.env.CLERK_SECRET_KEY) {
+
+  const clerkEnvReady =
+    Boolean(process.env.CLERK_SECRET_KEY?.trim()) && Boolean(process.env.CLERK_PUBLISHABLE_KEY?.trim());
+  if (process.env.NODE_ENV === 'production' && !clerkEnvReady) {
+    throw new Error(
+      'CLERK_SECRET_KEY and CLERK_PUBLISHABLE_KEY must be set in production (needed for Clerk Express middleware).',
+    );
+  }
+  if (clerkEnvReady) {
     app.use(clerkAuthMiddleware());
   }
   app.use('/api', healthRouter);

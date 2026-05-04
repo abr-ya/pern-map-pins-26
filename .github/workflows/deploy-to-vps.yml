@@ -20,8 +20,13 @@ jobs:
             whoami
             date
 
-      # Deploy-time env: GitHub Environment Variables (`vars`) and Secrets (`secrets`) are forwarded over SSH via `envs`.
-      # First deploy: clone uses `GIT_CLONE_URL` if set, else `git@github.com:${GITHUB_REPOSITORY}.git` (needs VPS SSH access to GitHub).
+      # Deploy-time env: Variables and Secrets are forwarded over SSH (`envs`) — available to this shell (`pnpm`, Prisma).
+      #
+      # PM2: a plain `pm2 restart` replays env from when the process was FIRST started — it does NOT pull every key
+      # from this session. RESTART_COMMAND should include `--update-env` (e.g. `pm2 reload map-pins-api --update-env`)
+      # so Node sees CLERK_*, DATABASE_URL, FRONTEND_URL, Cloudinary vars, etc. Or define env in ecosystem / env_file.
+      #
+      # First deploy: default clone URL uses `GIT_CLONE_URL` or `git@github.com:${GITHUB_REPOSITORY}.git`.
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -111,6 +116,10 @@ jobs:
                 exit 1
               fi
               echo "🔧 pm2 $(pm2 -v)"
+              case "$RESTART_COMMAND" in *--update-env*) ;; *)
+                echo "⚠ RESTART_COMMAND has no --update-env — PM2 may keep an old env; add --update-env to reload Clerk/DB/FRONTEND_URL vars from this deploy." >&2
+              ;;
+              esac
               echo "🔄 RESTART_COMMAND"
               export _DEPLOY_RESTART="$RESTART_COMMAND"
               bash -lc '
