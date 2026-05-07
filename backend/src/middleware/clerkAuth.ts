@@ -40,3 +40,20 @@ export const requireAuth: RequestHandler = (req, res, next) => {
 export function getClerkAuth(req: Request): ReturnType<typeof getAuth> {
   return getAuth(req);
 }
+
+/** Same env gate as `app.ts` uses before mounting `clerkMiddleware`. */
+export function isClerkAuthEnabled(): boolean {
+  return Boolean(process.env.CLERK_SECRET_KEY?.trim()) && Boolean(process.env.CLERK_PUBLISHABLE_KEY?.trim());
+}
+
+/**
+ * Clerk user id when middleware is mounted and the request has a session; otherwise `null`.
+ * Call only when {@link isClerkAuthEnabled} is true — matches app boot order.
+ */
+export function getOptionalClerkUserId(req: Request): string | null {
+  if (!isClerkAuthEnabled()) {
+    return null;
+  }
+  const auth = getAuth(req);
+  return auth.userId ?? null;
+}

@@ -3,7 +3,7 @@ import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { clerkAuthMiddleware } from './middleware/clerkAuth.js';
+import { clerkAuthMiddleware, isClerkAuthEnabled } from './middleware/clerkAuth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestId } from './middleware/requestId.js';
 import { requestLogger } from './middleware/requestLogger.js';
@@ -33,8 +33,7 @@ export function createApp(): express.Express {
   app.use(express.json());
   app.use(requestLogger);
 
-  const clerkEnvReady =
-    Boolean(process.env.CLERK_SECRET_KEY?.trim()) && Boolean(process.env.CLERK_PUBLISHABLE_KEY?.trim());
+  const clerkEnvReady = isClerkAuthEnabled();
   if (process.env.NODE_ENV === 'production' && !clerkEnvReady) {
     throw new Error(
       'CLERK_SECRET_KEY and CLERK_PUBLISHABLE_KEY must be set in production (needed for Clerk Express middleware).',
