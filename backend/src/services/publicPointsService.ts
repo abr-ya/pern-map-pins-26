@@ -1,6 +1,7 @@
 import { PointVisibility } from '../generated/prisma/enums.js';
 import { prisma } from '../lib/prisma.js';
 import { mapPointToJson, type PointJson } from '../lib/schemas/point.js';
+import { isPointVisibleToViewer, resolveViewerReadContext } from './pointReadAccess.js';
 
 /**
  * Guest “latest five”: globally public points (not private group–scoped), newest first, max 5.
@@ -33,42 +34,12 @@ export async function getPublicPointById(
     return null;
   }
 
-  let internalUserId: string | null = null;
-  let activeGroupId: string | null = null;
-  let memberOfActiveGroup = false;
-
-  if (clerkUserId) {
-    const user = await prisma.user.findUnique({
-      where: { clerkId: clerkUserId },
-      select: { id: true },
-    });
-    if (user) {
-      internalUserId = user.id;
-      const pref = await prisma.userPreference.findUnique({
-        where: { userId: user.id },
-        select: { activeGroupId: true },
-      });
-      activeGroupId = pref?.activeGroupId ?? null;
-      if (activeGroupId) {
-        const membership = await prisma.groupMember.findUnique({
-          where: { groupId_userId: { groupId: activeGroupId, userId: user.id } },
-        });
-        memberOfActiveGroup = Boolean(membership);
-      }
-    }
-  }
-
-  const isWorldPublic =
-    point.visibility === PointVisibility.public && point.groupId === null;
-  const isGroupOnlyForActiveGroup =
-    point.visibility === PointVisibility.group_only &&
-    point.groupId != null &&
-    memberOfActiveGroup &&
-    activeGroupId === point.groupId;
-
-  if (!isWorldPublic && !isGroupOnlyForActiveGroup) {
+  const ctx = await resolveViewerReadContext(clerkUserId);
+  if (!isPointVisibleToViewer(point, ctx)) {
     return null;
   }
+
+  const internalUserId = ctx.localUserId;
 
   const [avgResult, myRatingRow] = await Promise.all([
     prisma.rating.aggregate({
