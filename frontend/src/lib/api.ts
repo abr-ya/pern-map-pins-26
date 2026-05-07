@@ -109,6 +109,32 @@ export async function apiPatchJson<T>(
   return res.json() as Promise<T>;
 }
 
+export async function apiPutJson<T>(
+  path: string,
+  token: string | null,
+  body: unknown,
+  init?: RequestInit,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    accept: 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(apiUrl(path), {
+    ...init,
+    method: 'PUT',
+    headers: { ...headers, ...init?.headers },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
+
 export async function apiDelete(path: string, token: string | null, init?: RequestInit): Promise<void> {
   const headers: Record<string, string> = { accept: 'application/json' };
   if (token) {

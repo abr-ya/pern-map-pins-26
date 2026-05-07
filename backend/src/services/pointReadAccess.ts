@@ -1,6 +1,7 @@
 import type { Point } from '../generated/prisma/client.js';
 import { PointVisibility } from '../generated/prisma/enums.js';
 import { prisma } from '../lib/prisma.js';
+import { AppError } from '../middleware/errorHandler.js';
 
 /** Map / public-detail visibility context for a viewer (guest or signed-in). */
 export type ViewerReadContext = {
@@ -60,4 +61,26 @@ export function isPointVisibleToViewer(
     ctx.memberOfActiveGroup &&
     ctx.activeGroupId === point.groupId;
   return isWorldPublic || isGroupOnlyForActiveGroup;
+}
+
+/** Throw if the Clerk user cannot read this point; otherwise return row + local user id. */
+export async function requirePointReadableForClerk(
+  clerkUserId: string,
+  pointId: string,
+): Promise<{ point: Point; localUserId: string }> {
+  const ctx = await resolveViewerReadContext(clerkUserId);
+  if (!ctx.localUserId) {
+    throw new AppError(
+      'USER_NOT_PROVISIONED',
+      'No local user record for this account yet; wait for sync or sign in again',
+      403,
+    );
+  }
+
+  const point = await prisma.point.findUnique({ where: { id: pointId } });
+  if (!point || !isPointVisibleToViewer(point, ctx)) {
+    throw new AppError('NOT_FOUND', 'Point not found', 404);
+  }
+
+  return { point, localUserId: ctx.localUserId };
 }

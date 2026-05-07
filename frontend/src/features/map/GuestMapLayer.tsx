@@ -16,12 +16,31 @@ function GuestMapAutofit({ points }: { points: PublicPoint[] }) {
 /**
  * Guest “latest five” layer: plain markers (≤5) and bounds fitting. Tiles live in {@link OsmTileLayer}.
  */
-export function GuestMapLayer({ points }: { points: PublicPoint[] }) {
+export function GuestMapLayer({
+  points,
+  onMarkerClick,
+}: {
+  points: PublicPoint[];
+  onMarkerClick?: (pointId: string) => void;
+}) {
   return (
     <>
       <GuestMapAutofit points={points} />
       {points.map((p) => (
-        <Marker key={p.id} position={[p.latitude, p.longitude]} icon={makeGuestPinIcon(p.id)} />
+        <Marker
+          key={p.id}
+          position={[p.latitude, p.longitude]}
+          icon={makeGuestPinIcon(p.id)}
+          eventHandlers={
+            onMarkerClick
+              ? {
+                  click: () => {
+                    onMarkerClick(p.id);
+                  },
+                }
+              : undefined
+          }
+        />
       ))}
     </>
   );

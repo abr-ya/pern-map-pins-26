@@ -37,3 +37,11 @@ export type PhotoUploadPayload = {
   folder: string;
   photoKey: string;
 };
+
+export type CommentDto = {
+  id: string;
+  body: string;
+  authorId: string;
+  displayName: string;
+  createdAt: string;
+};

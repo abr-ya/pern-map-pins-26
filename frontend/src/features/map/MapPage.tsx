@@ -41,6 +41,7 @@ export function MapPage() {
   const { isSignedIn, getToken } = useAuth();
   const [folderId, setFolderId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState<{ lat: number; lng: number } | null>(null);
+  const [detailPointId, setDetailPointId] = useState<string | null>(null);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['public', 'latest'] as const,
@@ -185,15 +186,23 @@ export function MapPage() {
       <div className="relative min-h-[55vh] flex-1 md:min-h-0">
         <MapContainer className="z-0 h-full w-full" center={[20, 0]} zoom={2} scrollWheelZoom>
           <OsmTileLayer />
-          {!isSignedIn ? <GuestMapLayer points={items} /> : null}
+          {!isSignedIn ? <GuestMapLayer points={items} onMarkerClick={setDetailPointId} /> : null}
           {isSignedIn && folderId === null ? (
             <>
               <MapBoundsReporter onDebouncedBounds={onDebouncedBounds} />
-              <ClusteredMarkers points={explorePoints} iconFor={exploreIconFor} />
+              <ClusteredMarkers
+                points={explorePoints}
+                iconFor={exploreIconFor}
+                onMarkerClick={setDetailPointId}
+              />
             </>
           ) : null}
           {isSignedIn && folderId !== null ? (
-            <ClusteredMarkers points={myPoints} iconFor={myIconFor} />
+            <ClusteredMarkers
+              points={myPoints}
+              iconFor={myIconFor}
+              onMarkerClick={setDetailPointId}
+            />
           ) : null}
           {isSignedIn ? (
             <MapClickToCreate
@@ -210,6 +219,9 @@ export function MapPage() {
         isError={isError}
         error={error instanceof Error ? error : null}
         topSlot={folderSlot}
+        selectedPointId={detailPointId}
+        onSelectPoint={setDetailPointId}
+        onCloseDetail={() => setDetailPointId(null)}
       />
       {isSignedIn && createOpen ? (
         <CreatePointForm

@@ -30,11 +30,11 @@
 
 - [X] T059 [US5] Implement `GET /api/public/points/{pointId}` in `backend/src/routes/public.ts` using `publicPointsService.ts` to return 404 for non-visible points and guest-safe `Point` (no `myRating` for guest; omit comments) per [contracts/openapi.yaml](../001-map-world-points/contracts/openapi.yaml) `/public/points/{pointId}`
 - [X] T060 [P] [US5] Implement `GET`/`POST /api/points/{pointId}/comments` in `backend/src/routes/comments.ts` with `comments` table and signed-in-only list per [contracts/openapi.yaml](../001-map-world-points/contracts/openapi.yaml) `/points/{pointId}/comments`
-- [ ] T061 [P] [US5] Implement `PUT /api/points/{pointId}/rating` in `backend/src/routes/ratings.ts` and `backend/src/services/ratingService.ts` with upsert and aggregate average via `backend/src/services/ratingAggregate.ts` for `Point` DTOs
+- [X] T061 [P] [US5] Implement `PUT /api/points/{pointId}/rating` in `backend/src/routes/ratings.ts` and `backend/src/services/ratingService.ts` with upsert and aggregate average via `backend/src/services/ratingAggregate.ts` for `Point` DTOs
 - [ ] T062 [US5] Add favorites and favorite-folder APIs in `backend/src/routes/favorites.ts` and `backend/src/services/favoriteService.ts` per [data-model.md](../001-map-world-points/data-model.md) `favorites` and `favorite_folders`; add schemas and paths to `specs/001-map-world-points/contracts/openapi.yaml` and `backend/src/openapi/openapi.yaml` (per contract file note “to be expanded”)
-- [ ] T063 [P] [US5] Build `frontend/src/features/points/PointDetailPanel.tsx` (or `frontend/src/features/points/PointDetailPage.tsx`) with guest vs signed-in UI per **FR-010** and **FR-012**
+- [X] T063 [P] [US5] Build `frontend/src/features/points/PointDetailPanel.tsx` (or `frontend/src/features/points/PointDetailPage.tsx`) with guest vs signed-in UI per **FR-010** and **FR-012**
 - [ ] T064 [P] [US5] Build `frontend/src/features/favorites/FavoritesPanel.tsx` for listing and moving favorites between favorite folders
-- [ ] T065 [US5] Connect marker and list `onClick` in `MapPage.tsx` to open detail route or side panel in `frontend/src/routes/index.tsx` with optional `?pointId=` query
+- [X] T065 [US5] Connect marker and list `onClick` in `MapPage.tsx` to open detail route or side panel in `frontend/src/routes/index.tsx` with optional `?pointId=` query
 
 ### Tests for User Story 5
 
