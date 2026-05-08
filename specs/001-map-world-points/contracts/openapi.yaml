@@ -620,7 +620,21 @@ paths:
               properties:
                 value: { type: integer, minimum: 1, maximum: 5 }
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [myRating, averageRating]
+                properties:
+                  myRating:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                  averageRating:
+                    type: number
+                    nullable: true
         '401': { description: Unauthorized }
 
 # Additional routes (favorites, folders, groups, tags) to be expanded
