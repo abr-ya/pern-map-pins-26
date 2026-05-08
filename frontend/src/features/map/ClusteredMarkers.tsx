@@ -12,9 +12,11 @@ type MCG = L.MarkerClusterGroup;
 export function ClusteredMarkers({
   points,
   iconFor,
+  onMarkerClick,
 }: {
   points: ClusterPoint[];
   iconFor: (pointId: string) => L.Icon | L.DivIcon;
+  onMarkerClick?: (pointId: string) => void;
 }) {
   const map = useMap();
   const groupRef = useRef<MCG | null>(null);
@@ -36,9 +38,15 @@ export function ClusteredMarkers({
     }
     mcg.clearLayers();
     for (const p of points) {
-      mcg.addLayer(L.marker([p.latitude, p.longitude], { icon: iconFor(p.id) }));
+      const marker = L.marker([p.latitude, p.longitude], { icon: iconFor(p.id) });
+      if (onMarkerClick) {
+        marker.on('click', () => {
+          onMarkerClick(p.id);
+        });
+      }
+      mcg.addLayer(marker);
     }
-  }, [points, iconFor]);
+  }, [points, iconFor, onMarkerClick]);
 
   return null;
 }

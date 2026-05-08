@@ -2,6 +2,9 @@ name: Deploy to VPS
 
 on:
   workflow_dispatch: # Manual trigger from the GitHub Actions UI
+  push: # Automatic trigger on push to master branch
+    branches:
+      - master
 
 jobs:
   deploy:

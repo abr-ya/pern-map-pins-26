@@ -10,7 +10,7 @@
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no blocking dependencies on incomplete tasks in the same batch)
-- **[Story]**: User story from [spec.md](./spec.md) (US1–US4 for this feature slice; **US5** and remaining polish live in [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md))
+- **[Story]**: User story from [spec.md](./spec.md) (US1–US4 for this feature slice; **US5** follow-up: closed slice in [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md); remainder in [`specs/003-favorites-and-polish/tasks.md`](../003-favorites-and-polish/tasks.md))
 - Every task includes at least one concrete file path
 
 ## Path Conventions (from [plan.md](./plan.md))
@@ -151,7 +151,7 @@
 
 **Checkpoint**: Group privacy and active-group semantics match **FR-014** and acceptance scenarios in [spec.md](./spec.md) User Story 4; US4 test suite green
 
-**Follow-up**: User Story 5 (favorites, comments, ratings, guest detail) and cross-cutting polish are tracked in [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md) (tasks **T059–T074**).
+**Follow-up**: User Story 5 engagement slice (detail, comments, ratings, UI) is in [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md). **Favorites**, extra tests, and cross-cutting polish are in [`specs/003-favorites-and-polish/tasks.md`](../003-favorites-and-polish/tasks.md) (tasks **T062, T064, T066–T074**).
 
 ---
 
@@ -162,7 +162,7 @@
 - **Setup (Phase 1)** → no prerequisites
 - **Foundational (Phase 2)** → depends on Setup; **blocks all user stories**
 - **User stories** → all depend on Foundational completion; then prefer **P1 (US1, US2)** before **P2 (US3, US4)** for risk reduction
-- **US5 / polish** → see [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md)
+- **US5 / polish** → [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md) (delivered slice) then [`specs/003-favorites-and-polish/tasks.md`](../003-favorites-and-polish/tasks.md)
 
 ### User Story Dependencies
 
@@ -228,7 +228,7 @@
 3. **+ US2** → accounts
 4. **+ US3** → core product (“my points”)
 5. **+ US4** → private groups and full signed-in map
-6. **+ US5 + Polish** → [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md)
+6. **+ US5 slice + favorites/polish** → [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md), then [`specs/003-favorites-and-polish/tasks.md`](../003-favorites-and-polish/tasks.md)
 
 ### Parallel Team Strategy
 
@@ -253,4 +253,4 @@
 - Extend `specs/001-map-world-points/contracts/openapi.yaml` (and the served copy) whenever new routes are added; version bump on breaking changes per [plan.md](./plan.md)
 - **Cloudinary**: local dev uses a real dev cloud or skips photo until keys are set; document in `specs/001-map-world-points/quickstart.md`. *R2 is not part of this codebase.*
 - Group membership **onboarding** (invite vs admin) is explicitly flexible in [research.md](./research.md) — implement one path in T050 and document it
-- Deferred **US5 + polish**: [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md)
+- Deferred **US5 + polish**: [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md) (closed slice) · [`specs/003-favorites-and-polish/tasks.md`](../003-favorites-and-polish/tasks.md) (remainder)
