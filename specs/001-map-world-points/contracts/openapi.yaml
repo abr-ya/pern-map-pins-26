@@ -12,6 +12,7 @@ servers:
 tags:
   - name: public
   - name: points
+  - name: favorites
   - name: folders
   - name: tags
   - name: me
@@ -172,6 +173,48 @@ components:
       required: [name]
       properties:
         name: { type: string, minLength: 1, maxLength: 100 }
+
+    Favorite:
+      type: object
+      required: [pointId]
+      properties:
+        pointId: { type: string, format: uuid }
+        favoriteFolderId: { type: string, format: uuid, nullable: true }
+
+    FavoriteCreate:
+      type: object
+      required: [pointId]
+      properties:
+        pointId: { type: string, format: uuid }
+        favoriteFolderId: { type: string, format: uuid, nullable: true }
+
+    FavoriteMove:
+      type: object
+      required: [favoriteFolderId]
+      properties:
+        favoriteFolderId: { type: string, format: uuid, nullable: true }
+
+    FavoriteFolder:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        parentId: { type: string, format: uuid, nullable: true }
+
+    FavoriteFolderCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        parentId: { type: string, format: uuid, nullable: true }
+
+    FavoriteFolderUpdate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        parentId: { type: string, format: uuid, nullable: true }
 
 paths:
   /health:
@@ -462,6 +505,134 @@ paths:
         '204': { description: Deleted }
         '404': { description: Not found }
 
+  /favorites:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: List current user's favorites
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Favorite' } }
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: Add a point to favorites
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FavoriteCreate' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Favorite' }
+        '404': { description: Point or favorite folder not found }
+
+  /favorites/{pointId}:
+    patch:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: Move favorite into another favorite folder (or root)
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FavoriteMove' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Favorite' }
+        '404': { description: Favorite or favorite folder not found }
+    delete:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: Remove point from favorites
+      parameters:
+        - name: pointId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+        '404': { description: Favorite not found }
+
+  /favorite-folders:
+    get:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: List current user's favorite folders
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/FavoriteFolder' } }
+    post:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: Create a favorite folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FavoriteFolderCreate' }
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FavoriteFolder' }
+        '404': { description: Parent favorite folder not found }
+
+  /favorite-folders/{favoriteFolderId}:
+    patch:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: Update favorite folder
+      parameters:
+        - name: favoriteFolderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FavoriteFolderUpdate' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FavoriteFolder' }
+        '404': { description: Favorite folder not found }
+    delete:
+      security: [{ clerkBearer: [] }]
+      tags: [favorites]
+      summary: Delete favorite folder
+      parameters:
+        - name: favoriteFolderId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+        '404': { description: Favorite folder not found }
+
   /tags:
     get:
       security: [{ clerkBearer: [] }]
@@ -637,5 +808,5 @@ paths:
                     nullable: true
         '401': { description: Unauthorized }
 
-# Additional routes (favorites, folders, groups, tags) to be expanded
-# in the same file as implementation progresses; version bump on breaking change.
+# Additional routes (groups, tags) to be expanded in the same file as
+# implementation progresses; version bump on breaking change.
