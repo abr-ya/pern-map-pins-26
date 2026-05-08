@@ -21,7 +21,7 @@
 
 - [ ] T066 [P] [US5] Confirm or extend `backend/tests/integration/public.point-detail.test.ts`: guest `GET /api/public/points/{id}` — public fields + aggregate rating; **no** comment thread in payload; 404 for hidden points (file may already exist; align with checklist)
 - [ ] T067 [P] [US5] Add `backend/tests/integration/engagement.test.ts` with Supertest: `GET`/`POST` comments and `PUT` rating require auth; favorite add/remove and favorite-folder moves behave per schema (seed users/points)
-- [ ] T068 [P] [US5] Testing Library: `frontend/src/features/points/PointDetailPanel.test.tsx` — add signed-in/mocked flows if missing; add `frontend/src/features/favorites/FavoritesPanel.test.tsx` (guest/signed-in as appropriate)
+- [X] T068 [P] [US5] Testing Library: `frontend/src/features/points/PointDetailPanel.test.tsx` — add signed-in/mocked flows if missing; add `frontend/src/features/favorites/FavoritesPanel.test.tsx` (guest/signed-in as appropriate)
 
 ---
 
