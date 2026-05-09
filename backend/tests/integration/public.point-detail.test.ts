@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { PointVisibility } from '../../src/generated/prisma/enums.js';
+import { pointJsonSchema } from '../../src/lib/schemas/point.js';
 import { makePoint } from '../mocks/pointFactory.js';
 
 vi.mock('../../src/lib/prisma.js', () => ({
@@ -43,7 +44,7 @@ describe('GET /api/public/points/:pointId', () => {
     expect(res.body.code).toBe('NOT_FOUND');
   });
 
-  it('returns 200 with Point JSON for world-public point; guest has null myRating', async () => {
+  it('returns 200 with Point JSON for world-public point; guest has null myRating; no comment payload', async () => {
     const row = makePoint({ id: pointId });
     vi.mocked(prisma.point.findUnique).mockResolvedValue(row);
     vi.mocked(prisma.rating.aggregate).mockResolvedValue({
@@ -57,6 +58,8 @@ describe('GET /api/public/points/:pointId', () => {
     expect(res.body.visibility).toBe(PointVisibility.public);
     expect(res.body.averageRating).toBe(4);
     expect(res.body.myRating).toBeNull();
+    /** OpenAPI Point only — rejects e.g. `comments` embedded in detail (thread is a separate route). */
+    expect(pointJsonSchema.strict().safeParse(res.body).success).toBe(true);
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 

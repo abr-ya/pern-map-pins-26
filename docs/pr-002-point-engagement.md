@@ -31,8 +31,8 @@ Other commits on the branch may include **CI/deploy** adjustments (e.g. deploy w
 ## Out of scope (003)
 
 - **T062 / T064**: favorites and favorite-folder APIs + `FavoritesPanel`
-- **T066–T068**: fuller engagement / favorites test matrix (partially started)
-- **T069–T074**: quickstart/script alignment, production Swagger policy, root README, Prisma index audit, Playwright US2/US3, `e2e` GitHub Actions workflow
+- **T066–T068**: favorites + fuller integration test matrix (**T066/T067**: [`specs/004-tests-and-polish/tasks.md`](../specs/004-tests-and-polish/tasks.md); **T068** shipped with **003**).
+- **T069–T074**: quickstart/script alignment, production Swagger policy, root README, Prisma index audit, Playwright US2/US3, `e2e` GitHub Actions workflow — **[`specs/005-cross-cutting/tasks.md`](../specs/005-cross-cutting/tasks.md)**.
 
 See [`specs/003-favorites-and-polish/tasks.md`](../specs/003-favorites-and-polish/tasks.md).
 

@@ -2,7 +2,7 @@
 
 **Status**: **Delivered slice** — this checklist is complete for the PR from branch **`003-favorites-and-polish`** (favorites APIs, `FavoritesPanel`, frontend tests **T068**).
 
-**Deferred** (backend integration **T066–T067**, product polish **T069–T074**): tracked in [`specs/004-tests-and-polish/tasks.md`](../004-tests-and-polish/tasks.md).
+**Deferred**: backend integration **T066–T067** landed in **`004`**; product polish **T069–T074** is tracked in [`specs/005-cross-cutting/tasks.md`](../005-cross-cutting/tasks.md).
 
 **Input**: Remaining work was originally split when closing [`specs/002-point-engagement/tasks.md`](../002-point-engagement/tasks.md).
 
@@ -23,16 +23,16 @@
 
 - [X] T068 [P] [US5] Testing Library: `frontend/src/features/points/PointDetailPanel.test.tsx` — signed-in/mocked flows; `frontend/src/features/favorites/FavoritesPanel.test.tsx`
 
-**Moved to [004](../004-tests-and-polish/tasks.md)**: backend integration tasks **T066**, **T067**.
+**Shipped via [004](../004-tests-and-polish/tasks.md)**: backend integration tasks **T066**, **T067**.
 
 ---
 
-## Phase 2 — moved to [004](../004-tests-and-polish/tasks.md)
+## Phase 2 — polish & cross-cutting
 
-Polish tasks **T069–T074** (quickstart/scripts, Swagger in prod, README, Prisma audit, Playwright, e2e CI) are tracked in **`specs/004-tests-and-polish/tasks.md`**.
+Polish tasks **T069–T074** are tracked in **[`specs/005-cross-cutting/tasks.md`](../005-cross-cutting/tasks.md)** (**005** slice).
 
 ---
 
 ## Notes
 
-- Optional deep-link `?pointId=` for point detail was listed under 002 **T065**; may land in **004** or a small UI task — see [`specs/004-tests-and-polish/tasks.md`](../004-tests-and-polish/tasks.md).
+- Optional deep-link `?pointId=` for point detail was listed under 002 **T065**; may land in **005** or a small UI task — see [`specs/005-cross-cutting/tasks.md`](../005-cross-cutting/tasks.md).

@@ -10,7 +10,7 @@ This PR delivers the **favorites** slice of User Story 5 (**FR-009**): signed-in
 
 Frontend **Testing Library** coverage was added for **`FavoritesPanel`** and expanded **`PointDetailPanel`** tests with **signed-in** flows (**T068**).
 
-**Remaining** backend integration tests (**T066–T067**) and **Phase 2** polish (**T069–T074**) are intentionally **deferred** to **[`specs/004-tests-and-polish/tasks.md`](../specs/004-tests-and-polish/tasks.md)** so this PR stays focused and reviewable.
+**Deferred** backend integration (**T066–T067**) and **Phase 2** polish (**T069–T074**) were split for reviewability — follow **[`004`](../specs/004-tests-and-polish/tasks.md)** (integration tests delivered there) then **[`005`](../specs/005-cross-cutting/tasks.md)** (polish/E2E). This document reflects the **`003`** merge-time split.
 
 ---
 
@@ -28,16 +28,14 @@ Related design: [data-model.md](../specs/001-map-world-points/data-model.md) (`f
 
 ---
 
-## Out of scope (004)
+## Out of scope (follow-up slices)
 
-| Track | Tasks |
-|-------|-------|
-| **Backend integration (US5)** | **T066**, **T067** — public detail assertions, `engagement.test.ts` (comments, ratings, favorites end-to-end with Supertest). |
-| **Polish / cross-cutting** | **T069–T074** — quickstart vs scripts, production Swagger posture, root **README**, Prisma indexes vs data model, Playwright US2/US3, **`e2e` GitHub Actions workflow**. |
+| Track | Tasks | Tracking |
+|-------|-------|----------|
+| **Backend integration (US5)** | **T066**, **T067** | Delivered via **[PR `004`](./pr-004-backend-integration-tests.md)** / **`specs/004-tests-and-polish/tasks.md`**. |
+| **Polish / cross-cutting** | **T069–T074** | **`specs/005-cross-cutting/tasks.md`**. |
 
-See **[`specs/004-tests-and-polish/tasks.md`](../specs/004-tests-and-polish/tasks.md)**.
-
-Optional UI follow-up (**`?pointId=`** deep link for detail, originally **T065**) may land in **004** or a small separate task — noted in **`004`** checklist notes.
+Optional UI follow-up (**`?pointId=`** deep link for detail, originally **T065**) may land in **005** or a small separate task — see **`005`** notes.
 
 ---
 
@@ -56,7 +54,8 @@ From repo root (env per **[`specs/001-map-world-points/quickstart.md`](../specs/
 | Artifact | Purpose |
 |----------|---------|
 | [`specs/003-favorites-and-polish/tasks.md`](../specs/003-favorites-and-polish/tasks.md) | Closed checklist for this slice (**status: delivered**) |
-| [`specs/004-tests-and-polish/tasks.md`](../specs/004-tests-and-polish/tasks.md) | Follow-up integration tests + polish |
+| [`specs/004-tests-and-polish/tasks.md`](../specs/004-tests-and-polish/tasks.md) | Backend integration remainder (**T066–T067**), delivered slice |
+| [`specs/005-cross-cutting/tasks.md`](../specs/005-cross-cutting/tasks.md) | Polish + E2E CI (**T069–T074**) |
 | [`specs/001-map-world-points/contracts/openapi.yaml`](../specs/001-map-world-points/contracts/openapi.yaml) | API contract |
 
 ---
@@ -67,7 +66,7 @@ From repo root (env per **[`specs/001-map-world-points/quickstart.md`](../specs/
 - [ ] Favorite folder IDs in requests belong to the current user (**404**/safe behaviour on misuse).
 - [ ] **`POST /api/favorites`** only allows points the user can **read** (same rules as comments/ratings visibility).
 - [ ] OpenAPI contract matches implemented routes and response shapes.
-- [ ] Deferred scope is clear: **004** owns **T066–T074**, not this PR.
+- [ ] Deferred scope is clear: integration **004** (**T066–T067**) and polish **005** (**T069–T074**), not this PR.
 
 ---
 
