@@ -10,6 +10,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { commentsRouter } from './routes/comments.js';
 import { ratingsRouter } from './routes/ratings.js';
 import { createDocsRouter } from './routes/docs.js';
+import { favoritesRouter } from './routes/favorites.js';
 import { foldersRouter } from './routes/folders.js';
 import { groupsRouter } from './routes/groups.js';
 import { healthRouter } from './routes/health.js';
@@ -51,6 +52,7 @@ export function createApp(): express.Express {
   app.use('/api', groupsRouter);
   app.use('/api', mapRouter);
   app.use('/api', foldersRouter);
+  app.use('/api', favoritesRouter);
   app.use('/api', tagsRouter);
   app.use('/api', commentsRouter);
   app.use('/api', ratingsRouter);

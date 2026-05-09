@@ -24,6 +24,7 @@ vi.mock('../../src/lib/prisma.js', () => ({
 
 import { createApp } from '../../src/app.js';
 import { prisma } from '../../src/lib/prisma.js';
+import * as clerkAuth from '../../src/middleware/clerkAuth.js';
 
 describe('PUT /api/points/:pointId/rating (T061)', () => {
   const pointId = '00000000-0000-4000-8000-0000000000bb';
@@ -96,5 +97,30 @@ describe('PUT /api/points/:pointId/rating (T061)', () => {
 
     expect(res.status).toBe(400);
     expect(prisma.rating.upsert).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for invalid point id', async () => {
+    const res = await request(createApp())
+      .put('/api/points/not-a-uuid/rating')
+      .send({ value: 4 });
+
+    expect(res.status).toBe(400);
+    expect(prisma.rating.upsert).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 when auth middleware denies access', async () => {
+    const requireAuthSpy = vi
+      .spyOn(clerkAuth, 'requireAuth')
+      .mockImplementation((_req, res) => {
+        res.status(401).json({ code: 'UNAUTHENTICATED', message: 'Authentication required' });
+      });
+
+    const res = await request(createApp())
+      .put(`/api/points/${pointId}/rating`)
+      .send({ value: 4 });
+
+    expect(res.status).toBe(401);
+    expect(prisma.rating.upsert).not.toHaveBeenCalled();
+    requireAuthSpy.mockRestore();
   });
 });

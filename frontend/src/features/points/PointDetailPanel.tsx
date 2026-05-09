@@ -7,6 +7,7 @@ import {
   apiPutJson,
 } from '../../lib/api';
 import type { CommentDto, PublicPoint } from '../../lib/pointTypes';
+import { FavoritesPanel } from '../favorites/FavoritesPanel';
 
 function formatWhen(iso: string) {
   try {
@@ -154,6 +155,8 @@ export function PointDetailPanel({ pointId }: { pointId: string }) {
         </p>
       ) : (
         <>
+          <FavoritesPanel pointId={pointId} />
+
           <div className="border-t border-slate-100 pt-3">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Your rating</p>
             <div className="mt-2 flex flex-wrap gap-1">
