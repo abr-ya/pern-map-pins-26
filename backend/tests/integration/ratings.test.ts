@@ -6,10 +6,17 @@ import { makePoint } from '../mocks/pointFactory.js';
 
 const CLERK_USER_ID = 'user_smoke_ratings';
 
+const getAuthMock = vi.hoisted(() =>
+  vi.fn(() => ({
+    userId: CLERK_USER_ID as string | undefined,
+  })),
+);
+
 vi.mock('@clerk/express', () => ({
   clerkMiddleware:
     () => (_req: unknown, _res: unknown, next: NextFunction) => next(),
-  getAuth: () => ({ userId: CLERK_USER_ID }),
+  getAuth: (...args: unknown[]) =>
+    getAuthMock(...args) as ReturnType<(typeof import('@clerk/express'))['getAuth']>,
 }));
 
 vi.mock('../../src/lib/prisma.js', () => ({
@@ -24,7 +31,6 @@ vi.mock('../../src/lib/prisma.js', () => ({
 
 import { createApp } from '../../src/app.js';
 import { prisma } from '../../src/lib/prisma.js';
-import * as clerkAuth from '../../src/middleware/clerkAuth.js';
 
 describe('PUT /api/points/:pointId/rating (T061)', () => {
   const pointId = '00000000-0000-4000-8000-0000000000bb';
@@ -36,6 +42,7 @@ describe('PUT /api/points/:pointId/rating (T061)', () => {
       'CLERK_PUBLISHABLE_KEY',
       'pk_test_ZXhhbXBsZS5jbGVyay5leGFtcGxlLmRldiQ',
     );
+    getAuthMock.mockImplementation(() => ({ userId: CLERK_USER_ID }));
     vi.mocked(prisma.user.findUnique).mockReset();
     vi.mocked(prisma.userPreference.findUnique).mockReset();
     vi.mocked(prisma.groupMember.findUnique).mockReset();
@@ -108,19 +115,15 @@ describe('PUT /api/points/:pointId/rating (T061)', () => {
     expect(prisma.rating.upsert).not.toHaveBeenCalled();
   });
 
-  it('returns 401 when auth middleware denies access', async () => {
-    const requireAuthSpy = vi
-      .spyOn(clerkAuth, 'requireAuth')
-      .mockImplementation((_req, res) => {
-        res.status(401).json({ code: 'UNAUTHENTICATED', message: 'Authentication required' });
-      });
+  it('returns 401 when Clerk session has no user id', async () => {
+    getAuthMock.mockImplementation(() => ({}));
 
     const res = await request(createApp())
       .put(`/api/points/${pointId}/rating`)
       .send({ value: 4 });
 
     expect(res.status).toBe(401);
+    expect(res.body).toMatchObject({ code: 'UNAUTHENTICATED' });
     expect(prisma.rating.upsert).not.toHaveBeenCalled();
-    requireAuthSpy.mockRestore();
   });
 });

@@ -143,7 +143,7 @@ describe('PointDetailPanel (signed-in, T068)', () => {
 
     expect(screen.queryByText(/Sign in to read comments/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Your rating/i)).toBeInTheDocument();
-    expect(screen.getByText(/Comments/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Comments$/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Write a comment/i)).toBeInTheDocument();
     expect(screen.getByText('Favorites')).toBeInTheDocument();
 
