@@ -1,31 +1,28 @@
-import L from 'leaflet';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useMap } from 'react-leaflet';
-
-type LatLng = { latitude: number; longitude: number };
-
-const WORLD_CENTER: L.LatLngExpression = [20, 0];
-const WORLD_ZOOM = 2;
-const SINGLE_ZOOM = 10;
+import { applyPointsBounds, type LatLngLike } from './mapBounds';
 
 /**
  * Fit the map to the given guest points, or a world view when there are none.
+ * When `enabled` is false (e.g. point detail open), skips so selection camera can own the view.
  * Must be used in a component rendered inside `MapContainer`.
  */
-export function useGuestMapBounds(points: readonly LatLng[]): void {
+export function useGuestMapBounds(points: readonly LatLngLike[], enabled = true): void {
   const map = useMap();
 
+  const coordsKey = useMemo(
+    () =>
+      points
+        .map((p) => `${p.latitude.toFixed(6)},${p.longitude.toFixed(6)}`)
+        .sort()
+        .join('|'),
+    [points],
+  );
+
   useEffect(() => {
-    if (points.length === 0) {
-      map.setView(WORLD_CENTER, WORLD_ZOOM);
+    if (!enabled) {
       return;
     }
-    if (points.length === 1) {
-      const p = points[0];
-      map.setView([p.latitude, p.longitude], SINGLE_ZOOM);
-      return;
-    }
-    const bounds = L.latLngBounds(points.map((p) => L.latLng(p.latitude, p.longitude)));
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
-  }, [map, points]);
+    applyPointsBounds(map, points);
+  }, [map, points, enabled, coordsKey]);
 }

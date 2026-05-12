@@ -13,21 +13,30 @@ import { GuestMapLayer } from './GuestMapLayer';
 import { LatestPointsPanel } from './LatestPointsPanel';
 import { MapBoundsReporter } from './MapBoundsReporter';
 import { OsmTileLayer } from './OsmTileLayer';
+import { SignedInSelectionCamera } from './SignedInSelectionCamera';
 import { makeGuestPinIcon, makeMyPinIcon } from './mapPins';
 
-function MapClickToCreate({
-  enabled,
-  onPick,
+function SignedInMapClick({
+  createModalOpen,
+  detailPointId,
+  onPickCreate,
+  onClearDetail,
 }: {
-  enabled: boolean;
-  onPick: (lat: number, lng: number) => void;
+  createModalOpen: boolean;
+  detailPointId: string | null;
+  onPickCreate: (lat: number, lng: number) => void;
+  onClearDetail: () => void;
 }) {
   useMapEvents({
     click(e) {
-      if (!enabled) {
+      if (detailPointId) {
+        onClearDetail();
         return;
       }
-      onPick(e.latlng.lat, e.latlng.lng);
+      if (createModalOpen) {
+        return;
+      }
+      onPickCreate(e.latlng.lat, e.latlng.lng);
     },
   });
   return null;
@@ -186,7 +195,14 @@ export function MapPage() {
       <div className="relative min-h-[55vh] flex-1 md:min-h-0">
         <MapContainer className="z-0 h-full w-full" center={[20, 0]} zoom={2} scrollWheelZoom>
           <OsmTileLayer />
-          {!isSignedIn ? <GuestMapLayer points={items} onMarkerClick={setDetailPointId} /> : null}
+          {!isSignedIn ? (
+            <GuestMapLayer
+              points={items}
+              selectedPointId={detailPointId}
+              onClearSelection={() => setDetailPointId(null)}
+              onMarkerClick={setDetailPointId}
+            />
+          ) : null}
           {isSignedIn && folderId === null ? (
             <>
               <MapBoundsReporter onDebouncedBounds={onDebouncedBounds} />
@@ -205,10 +221,18 @@ export function MapPage() {
             />
           ) : null}
           {isSignedIn ? (
-            <MapClickToCreate
-              enabled={createOpen === null}
-              onPick={(lat, lng) => setCreateOpen({ lat, lng })}
-            />
+            <>
+              <SignedInSelectionCamera
+                detailPointId={detailPointId}
+                points={folderId === null ? explorePoints : myPoints}
+              />
+              <SignedInMapClick
+                createModalOpen={createOpen !== null}
+                detailPointId={detailPointId}
+                onPickCreate={(lat, lng) => setCreateOpen({ lat, lng })}
+                onClearDetail={() => setDetailPointId(null)}
+              />
+            </>
           ) : null}
         </MapContainer>
       </div>

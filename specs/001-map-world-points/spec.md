@@ -2,10 +2,16 @@
 
 **Feature Branch**: `001-map-world-points`  
 **Created**: 2026-04-22  
+**Updated**: 2026-05-12  
 **Status**: Draft  
-**Input**: User description: "We are building a 'Points on the map' app. Main screen: world map with zoom and pan, showing the map and the five most recently created points. Registration/login via a screen or modal: email and password, Google sign-in; more providers may come later. For signed-in users: add points (click → coordinates, title, optional description and photo), folders for the user's own points, tags, everyone can see one another's points, a user category that can create points and folders visible only to them, favorites with folders, a point detail (page or sidebar) with comments and a 1–5 rating, and when a folder is selected, show that folder's points on the map."
+**Input**: User description: "We are building a 'Points on the map' app. Main screen: world map with zoom and pan, showing the map and the five most recently created points. Registration/login via a screen or modal: email and password, Google sign-in; more providers may come later. For signed-in users: add points (click → coordinates, title, optional description and photo), folders for the user's own points, tags, everyone can see one another's points, a user category that can create points and folders visible only to them, favorites with folders, a point detail (page or sidebar) with comments and a 1–5 rating, and when a folder is selected, show that folder's points on the map."  
+**Amendment (2026-05-12)**: Refine map pan/zoom when a point is selected and when selection is cleared: on select, center the chosen point and zoom to a neighborhood scale (about three to four city blocks around it); on deselect, restore default map position and zoom for the **current** set of points on the map (guest, signed-in, folder, etc.).
 
 ## Clarifications
+
+### Session 2026-05-12
+
+- Q: How should the map behave when the user **selects** a point and when they **clear** selection? → A: **On select**, the map MUST **move** so the selected point is **in the center of the screen** (viewport) and the zoom MUST increase to a **neighborhood** level where roughly **three to four city blocks** (or equivalent street context in non‑grid places) are visible **around** the point—close enough to orient by nearby streets, not whole‑city or world view. **On deselect**, the map MUST return to the **default** **position and zoom** defined for the **current** map context (which points are shown now): e.g. guest **latest five** framing per FR-011, signed‑in **fit** to the applicable public (and permitted) markers, **folder** view fit to that folder’s points, etc. If the visible point set is empty, the map stays valid and predictable (per existing empty‑state rules).
 
 ### Session 2026-04-22
 
@@ -31,6 +37,8 @@ A visitor opens the main screen and sees a world map: they can zoom, zoom out, a
 2. **Given** there are at least five applicable public points in the system, **When** an **unsigned** user views the main screen, **Then** the list shows five items and the map shows **five markers and no other** public points (per visibility rules for the "latest" list).
 3. **Given** there are no points to display, **When** a user views the main screen, **Then** the "latest five" block does not mislead the user and does not break the map.
 4. **Given** a user **signs in**, **When** they use the main map, **Then** they can see the **full** set of public points (per FR-007), not only the "latest five" markers.
+5. **Given** a point can be **selected** (e.g. marker tap or equivalent), **When** the user selects it, **Then** the map **centers** that point in the view and zooms to show about **three to four city blocks** (neighborhood context) around it (per **FR-015**).
+6. **Given** a point is selected and the map is in the neighborhood view, **When** the user **clears** selection (e.g. closes detail, deselects, or equivalent), **Then** the map **restores** the **default** position and zoom for the **current** visible points and context (per **FR-016**), e.g. guest framing for the latest five, or fit to all markers in scope for signed‑in or folder views.
 
 ---
 
@@ -115,6 +123,9 @@ A **signed-in** user **saves other users' points to favorites (and their own if 
 - A user **leaves** a private category: content created in the group follows the **rules** captured in the plan (visibility retention / transfer—see assumptions).
 - A user belongs to **two** private groups: **map** and **lists** of **group** **folders** **reflect** only the **active** group’s **private** **slice** until they **switch**; **stale** **UI** (showing the wrong group’s label) is **unacceptable** for **acceptance**.
 - **Unsigned** user opens a **valid** public detail—**comment** and **favorites** areas show a clear path to **sign in** (not a blank or broken state).
+- User **selects** a point that is **near the edge** of the current view—map still **centers** it with neighborhood zoom (per FR-015).
+- User **deselects** while the visible point set is **empty**—map behavior stays consistent with empty‑state rules; no broken or stuck zoom.
+- **Context change** (e.g. sign‑in, folder switch, active private group switch) while a point was selected: the product applies **default** framing for the **new** context; if the selected point is **no longer** in the visible set, selection is **cleared** and FR-016 applies to the new set.
 
 ## Requirements *(mandatory)*
 
@@ -134,6 +145,8 @@ A **signed-in** user **saves other users' points to favorites (and their own if 
 - **FR-012**: For **unsigned** users, the system MUST support **read-only** opening of a **public** point from guest-allowed entry points (e.g. a marker in the "latest five" set). The detail MUST include **title**, **description** (if any), **photo** (if any), and the **displayed aggregate** rating. It MUST **not** expose the **comment** list or **favorites** controls to guests, and **must not** allow **entering** a **comment** or **personal** rating without sign-in. **Private** or **group-restricted** content MUST follow FR-007/FR-008 and not be **surfaced** to guests in violation of those rules.
 - **FR-013**: For the **first** product release, the system MUST **not** require **email ownership verification** (e.g. a confirmation link) as a **mandatory** step before the user can **create points**, use **favorites**, **comment**, **rate**, or other **signed-in** behaviors in this spec. The implementation plan may still include **optional** verification, re-send flows, or **later** stricter policy for **abuse** prevention.
 - **FR-014**: A user **MAY** belong to **more than one** private group. The system MUST provide a clear **active private group** control (e.g. a **switcher**). For map and folder views that include **member-only** data, the system MUST treat only the **active** group’s private points and folders (among groups the user belongs to) as in scope, together with the **applicable** public points as defined in the plan. **Other** private groups’ **member-only** content MUST **not** appear in that view until the user selects that group as **active**. A **"public only"** (or **no** private overlay) mode MAY be specified in the plan; it MUST remain consistent with FR-007 and FR-008.
+- **FR-015**: When the user **selects** a point (marker, list row, or other deliberate **selection** that makes that point **active** on the map), the system MUST **center** the map on that point’s coordinates and set zoom so the visible extent shows approximately **three to four city blocks** (or **equivalent** local street context where a regular street grid does not apply)—a **neighborhood‑scale** view, not a city‑wide or world view. This MUST apply in every map context where point selection is offered (guest, signed‑in, folder, etc.), unless the implementation plan documents a **narrow** exception (e.g. impossible projection); there MUST be **no** case where selection leaves the point **off‑screen** without user panning.
+- **FR-016**: When the user **clears** point selection (closes detail, taps outside, explicit **deselect**, or equivalent), the system MUST restore the map to the **default** **position and zoom** for the **current** map context and **currently visible** points: the same framing rules as **before** that selection for that context (e.g. **FR-011** for unsigned **latest five**, fit‑to‑markers for signed‑in public layer, fit for **folder** contents, etc.). If **no** points are visible, the map MUST remain usable and match the agreed **empty** default for that screen.
 
 ### Key Entities
 
@@ -154,6 +167,7 @@ A **signed-in** user **saves other users' points to favorites (and their own if 
 - **SC-003**: In every private-group-related acceptance case, users **outside** the group do not see other users' private content, and **members** do per the rules (verified by a checklist).
 - **SC-004**: The main-screen map remains usable for zoom and pan with **zero** and with **hundreds** of test markers, without a case where a specific test point cannot be opened (per an agreed pattern such as list/cluster).
 - **SC-005**: Average satisfaction with favorites and favorite folders is **at least 4/5** in a survey at the end of the first release acceptance cycle (sample size set in advance).
+- **SC-006**: In scripted map tasks, **at least 85%** of participants **on first try** report that the map **clearly** shows the **selected** point’s **immediate surroundings** (neighborhood context) **without** needing to zoom or pan further after selection; after **deselect**, **at least 90%** recognize that the map returned to a **sensible overview** of **all** points currently in scope (per agreed test script).
 
 ## Assumptions
 
@@ -167,3 +181,5 @@ A **signed-in** user **saves other users' points to favorites (and their own if 
 - Titles and descriptions follow normal civility rules; **at most one** photo per point in v1; **multi-photo** support is deferred unless a **later** spec revision adds it. **Photo** file limits (size, format) are in the plan.
 - Point **detail** for **guests** is **read-only** for core fields and the **aggregate** rating; **full** **social** (comments, own rating, favorites) is **signed-in** only (per FR-010, FR-012).
 - **Email** **verification** (inbox link) is **not** a **required** **gate** for **MVP** features in this spec; **anti-abuse** may rely on other controls in the plan (per FR-013).
+- **“Three to four city blocks”** is a **product‑level** neighborhood scale; exact numeric scale may be refined in the plan for different latitudes and map styles, but the user‑visible outcome is **street‑level context** around the point (not building‑floor indoor scale, not metropolitan overview).
+- **Default** map position and zoom after deselect **match** the framing the product would use when opening the **same** screen with the **same** visible points and **no** point selected (FR-016); transient manual pans before select **need not** be restored—only the **product default** for the current data.

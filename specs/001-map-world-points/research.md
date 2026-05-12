@@ -50,6 +50,7 @@
 **Guest vs signed-in** (spec FR-011, FR-007):
 - **Guest**: request **exactly** point IDs for “latest five” from API, render **only** those markers; fit bounds to markers.
 - **Signed-in**: request public points in viewport (with limit + clustering) and merge **group** points per `activeGroupId` (server-filtered).
+- **Selection camera (FR-015 / FR-016)**: see **§8** below—**neighborhood** zoom on select; on deselect, re-apply the **same** default framing as for that context without selection.
 
 ---
 
@@ -92,6 +93,23 @@
 - **Admin** or **bootstrap script** to create groups and add members, **or** simple **invite code** field—**choose in tasks**; not blocking architecture.
 
 **Active group (FR-014)**: store `active_private_group_id` in **server session** (Redis optional) or in **`user_preferences`** table keyed by `user_id`.
+
+---
+
+## 8. Map selection: center, neighborhood zoom, restore default (FR-015 / FR-016)
+
+**Date**: 2026-05-12
+
+**Decision**
+
+- **On select**: Leaflet `map.flyTo([lat, lng], zoom, { duration })` with zoom **~16** (neighborhood / “3–4 blocks” at mid-latitudes); see `frontend/src/features/map/mapBounds.ts` (`NEIGHBORHOOD_ZOOM`).
+- **On deselect**: Re-run the same **overview** fit as for unselected mode: `applyPointsBounds` (guest latest-five, signed-in folder pins, or current **explore** pins in memory).
+- **Guest**: suspend `useGuestMapBounds` while detail is open; background map click clears selection.
+- **Signed-in**: map click clears detail before “click to create”; `SignedInSelectionCamera` handles fly + restore.
+
+**Rationale**: Spec is product-worded; Leaflet uses zoom levels—**16** is a practical default, tunable in QA.
+
+**Alternatives considered**: `fitBounds` on a small fixed-radius box; **Turf** buffer—deferred if fixed zoom fails acceptance.
 
 ## Resolved (no open NEEDS CLARIFICATION)
 
