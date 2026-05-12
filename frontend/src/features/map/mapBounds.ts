@@ -5,7 +5,7 @@ export const WORLD_ZOOM = 2;
 export const SINGLE_ZOOM = 10;
 /** ~3–4 city blocks at mid-latitudes with OSM (tunable). */
 export const NEIGHBORHOOD_ZOOM = 16;
-export const NEIGHBORHOOD_FLY_DURATION_SEC = 0.45;
+export const NEIGHBORHOOD_FLY_DURATION_SEC = 1.1;
 
 export type LatLngLike = { latitude: number; longitude: number };
 
@@ -25,5 +25,8 @@ export function applyPointsBounds(map: L.Map, points: readonly LatLngLike[]): vo
 }
 
 export function flyToNeighborhood(map: L.Map, latitude: number, longitude: number): void {
-  map.flyTo([latitude, longitude], NEIGHBORHOOD_ZOOM, { duration: NEIGHBORHOOD_FLY_DURATION_SEC });
+  map.flyTo([latitude, longitude], NEIGHBORHOOD_ZOOM, {
+    duration: NEIGHBORHOOD_FLY_DURATION_SEC,
+    easeLinearity: 0.25,
+  });
 }

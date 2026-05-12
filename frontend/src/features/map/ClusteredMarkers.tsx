@@ -38,7 +38,10 @@ export function ClusteredMarkers({
     }
     mcg.clearLayers();
     for (const p of points) {
-      const marker = L.marker([p.latitude, p.longitude], { icon: iconFor(p.id) });
+      const marker = L.marker([p.latitude, p.longitude], {
+        bubblingMouseEvents: false,
+        icon: iconFor(p.id),
+      });
       if (onMarkerClick) {
         marker.on('click', () => {
           onMarkerClick(p.id);
