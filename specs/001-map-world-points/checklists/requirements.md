@@ -2,6 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
 **Created**: 2026-04-22  
+**Last validated**: 2026-05-12  
 **Feature**: [spec.md](../spec.md) (English)
 
 ## Content Quality
@@ -33,4 +34,5 @@
 
 - Validation (2026-04-22): spec describes product behavior and rules of visibility, favorites, folders, and ratings without naming stacks or protocols. Spec language: English, aligned with Spec Kit templates.
 - 2026-04-22 clarifications: (1) **Guest** map = **only** the same five "latest" public markers; full public layer after sign-in (FR-011). (2) **Guest** point detail = read-only **title, description, photo, aggregate** rating; **no** comment list; sign-in for comments, own rating, favorites (FR-012). (3) **No** mandatory **email verification** before create-point and other spec actions in first release (FR-013). (4) **Several** private groups per user, **one** **active** at a time (switcher); other groups’ private content hidden until that group is active (FR-014). (5) **At most one** photo per point in v1 (FR-004).
-- Next step: `/speckit.plan` (or continue `/speckit.clarify` for further questions).
+- Validation (2026-05-12): amendment adds **FR-015** (center + neighborhood zoom on select) and **FR-016** (restore default framing for current context on deselect), new acceptance scenarios in User Story 1, edge cases, **SC-006**, and assumptions—still product‑worded (no frameworks). All checklist items pass.
+- Next step: `/speckit.plan` to sync design artifacts, or `/speckit.tasks` if plan already reflects map behavior.
