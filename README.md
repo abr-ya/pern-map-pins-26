@@ -49,6 +49,17 @@ Monorepo tooling: **pnpm** workspaces (`packageManager` in root `package.json`).
 - **Cloudinary** for point photos (signed uploads; `photo_key` stores the Cloudinary public id)
 - **Clerk** for identity (e.g. email/password and social providers, per your Clerk dashboard)
 
+## External services
+
+Third-party systems this app talks to in normal operation (configure keys and URLs via `.env` files — see [quickstart](specs/001-map-world-points/quickstart.md)).
+
+| Service | Link | Role in this project |
+|--------|------|-------------------------|
+| **PostgreSQL** (hosted, e.g. [Neon](https://neon.tech)) | [Neon](https://neon.tech) · [PostgreSQL](https://www.postgresql.org/) | Primary database for users, points, folders, favorites, comments, ratings, etc. Connection string is `DATABASE_URL`; accessed through **Prisma** from the backend. |
+| **[Clerk](https://clerk.com)** | [clerk.com](https://clerk.com) | Authentication and session: sign-in UI and tokens in the SPA (`@clerk/react`), verified on the API (`@clerk/express`). Optional **webhooks** (signed with `CLERK_WEBHOOK_SECRET`) can sync users into our DB. |
+| **[Cloudinary](https://cloudinary.com)** | [cloudinary.com](https://cloudinary.com) | Image pipeline for point photos: signed uploads from the client, storage and delivery URLs; the backend stores Cloudinary **`public_id`** in `photo_key`. Setup: [`docs/cloudinary-setup.md`](docs/cloudinary-setup.md). |
+| **[OpenStreetMap](https://www.openstreetmap.org/)** map tiles | [OSM](https://www.openstreetmap.org/) · [tile policy](https://operations.osmfoundation.org/policies/tiles/) | Basemap raster tiles for **Leaflet** (e.g. `{s}.tile.openstreetmap.org`). No API key; follow OSMF tile usage and attribution rules in production. |
+
 ## Local development
 
 Prerequisites: **Node 20+**, **pnpm 9+**, and dev accounts for **Clerk**, **PostgreSQL** (Neon is fine), and **Cloudinary** as needed.

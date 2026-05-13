@@ -33,7 +33,7 @@ function renderWithMap(points: PublicPoint[]) {
           attribution=""
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <GuestMapLayer points={points} />
+        <GuestMapLayer points={points} selectionSerial={0} />
       </MapContainer>
     </div>,
   );
