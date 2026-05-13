@@ -51,6 +51,16 @@ export function MapPage() {
   const [folderId, setFolderId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState<{ lat: number; lng: number } | null>(null);
   const [detailPointId, setDetailPointId] = useState<string | null>(null);
+  const [selectionSerial, setSelectionSerial] = useState(0);
+
+  const selectPoint = useCallback((pointId: string) => {
+    setDetailPointId(pointId);
+    setSelectionSerial((value) => value + 1);
+  }, []);
+
+  const clearSelectedPoint = useCallback(() => {
+    setDetailPointId(null);
+  }, []);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['public', 'latest'] as const,
@@ -138,6 +148,19 @@ export function MapPage() {
 
   const explorePoints = useMemo(() => mapPublicData?.items ?? [], [mapPublicData?.items]);
 
+  /** Latest-five list + current map layer — so list clicks can fly even if pin is outside viewport query. */
+  const signedInSelectionLookup = useMemo(() => {
+    const byId = new Map<string, PublicPoint>();
+    for (const p of items) {
+      byId.set(p.id, p);
+    }
+    const layer = folderId === null ? explorePoints : myPoints;
+    for (const p of layer) {
+      byId.set(p.id, p);
+    }
+    return [...byId.values()];
+  }, [items, explorePoints, myPoints, folderId]);
+
   const selectedFolderLabel = useMemo(() => {
     if (folderId === null) {
       return 'All my points';
@@ -199,8 +222,9 @@ export function MapPage() {
             <GuestMapLayer
               points={items}
               selectedPointId={detailPointId}
-              onClearSelection={() => setDetailPointId(null)}
-              onMarkerClick={setDetailPointId}
+              selectionSerial={selectionSerial}
+              onClearSelection={clearSelectedPoint}
+              onMarkerClick={selectPoint}
             />
           ) : null}
           {isSignedIn && folderId === null ? (
@@ -209,7 +233,7 @@ export function MapPage() {
               <ClusteredMarkers
                 points={explorePoints}
                 iconFor={exploreIconFor}
-                onMarkerClick={setDetailPointId}
+                onMarkerClick={selectPoint}
               />
             </>
           ) : null}
@@ -217,20 +241,22 @@ export function MapPage() {
             <ClusteredMarkers
               points={myPoints}
               iconFor={myIconFor}
-              onMarkerClick={setDetailPointId}
+              onMarkerClick={selectPoint}
             />
           ) : null}
           {isSignedIn ? (
             <>
               <SignedInSelectionCamera
                 detailPointId={detailPointId}
+                selectionSerial={selectionSerial}
                 points={folderId === null ? explorePoints : myPoints}
+                lookupPoints={signedInSelectionLookup}
               />
               <SignedInMapClick
                 createModalOpen={createOpen !== null}
                 detailPointId={detailPointId}
                 onPickCreate={(lat, lng) => setCreateOpen({ lat, lng })}
-                onClearDetail={() => setDetailPointId(null)}
+                onClearDetail={clearSelectedPoint}
               />
             </>
           ) : null}
@@ -244,8 +270,8 @@ export function MapPage() {
         error={error instanceof Error ? error : null}
         topSlot={folderSlot}
         selectedPointId={detailPointId}
-        onSelectPoint={setDetailPointId}
-        onCloseDetail={() => setDetailPointId(null)}
+        onSelectPoint={selectPoint}
+        onCloseDetail={clearSelectedPoint}
       />
       {isSignedIn && createOpen ? (
         <CreatePointForm

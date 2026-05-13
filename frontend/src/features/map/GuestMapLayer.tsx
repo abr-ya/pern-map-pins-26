@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Marker, useMap, useMapEvents } from 'react-leaflet';
 import type { PublicPoint } from '../../lib/pointTypes';
 import { flyToNeighborhood } from './mapBounds';
@@ -22,23 +22,31 @@ function GuestMapAutofit({
 
 function GuestSelectionCamera({
   selectedPointId,
+  selectionSerial,
   points,
 }: {
   selectedPointId: string | null | undefined;
+  selectionSerial: number;
   points: PublicPoint[];
 }) {
   const map = useMap();
-  const selected = useMemo(
-    () => (selectedPointId ? points.find((p) => p.id === selectedPointId) : undefined),
-    [points, selectedPointId],
-  );
+  const lastHandledSerial = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!selected) {
+    if (!selectedPointId) {
+      lastHandledSerial.current = null;
       return;
     }
-    flyToNeighborhood(map, selected.latitude, selected.longitude);
-  }, [map, selected]);
+    if (lastHandledSerial.current === selectionSerial) {
+      return;
+    }
+    const p = points.find((q) => q.id === selectedPointId);
+    if (!p) {
+      return;
+    }
+    flyToNeighborhood(map, p.latitude, p.longitude);
+    lastHandledSerial.current = selectionSerial;
+  }, [map, points, selectedPointId, selectionSerial]);
 
   return null;
 }
@@ -66,12 +74,14 @@ function GuestDismissOnMapClick({
 export function GuestMapLayer({
   points,
   selectedPointId,
+  selectionSerial,
   onClearSelection,
   onMarkerClick,
 }: {
   points: PublicPoint[];
   /** When set, autofit to all guest pins is suspended and the map flies to the selected pin (FR-015). */
   selectedPointId?: string | null;
+  selectionSerial: number;
   /** Map background click clears selection (guest). */
   onClearSelection?: () => void;
   onMarkerClick?: (pointId: string) => void;
@@ -81,13 +91,20 @@ export function GuestMapLayer({
   return (
     <>
       <GuestMapAutofit points={points} suspendAutofit={suspend} />
-      {suspend ? <GuestSelectionCamera selectedPointId={selectedPointId} points={points} /> : null}
+      {suspend ? (
+        <GuestSelectionCamera
+          selectedPointId={selectedPointId}
+          selectionSerial={selectionSerial}
+          points={points}
+        />
+      ) : null}
       <GuestDismissOnMapClick selectedPointId={selectedPointId} onClearSelection={onClearSelection} />
       {points.map((p) => (
         <Marker
           key={p.id}
           position={[p.latitude, p.longitude]}
           icon={makeGuestPinIcon(p.id)}
+          bubblingMouseEvents={false}
           eventHandlers={
             onMarkerClick
               ? {

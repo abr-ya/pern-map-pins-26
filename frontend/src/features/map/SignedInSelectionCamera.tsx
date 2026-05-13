@@ -4,34 +4,50 @@ import { applyPointsBounds, flyToNeighborhood, type LatLngLike } from './mapBoun
 
 type MapPoint = LatLngLike & { id: string };
 
+type Props = {
+  detailPointId: string | null;
+  selectionSerial: number;
+  /** Pins used for overview after deselect (explore viewport or folder). */
+  points: readonly MapPoint[];
+  /** Where to resolve coordinates for fly-to (includes Latest list + map layer). */
+  lookupPoints: readonly MapPoint[];
+};
+
 /**
- * FR-015 / FR-016: neighborhood fly-to when a pin is selected; restore overview when selection clears.
+ * FR-015 / FR-016: fly to neighborhood once per selection; restore overview on deselect.
+ * Does not re-fly when `points` / `lookupPoints` refetch while the same point stays selected
+ * (e.g. map scroll zoom changing explorePoints).
  */
 export function SignedInSelectionCamera({
   detailPointId,
+  selectionSerial,
   points,
-}: {
-  detailPointId: string | null;
-  points: readonly MapPoint[];
-}) {
+  lookupPoints,
+}: Props) {
   const map = useMap();
-  const prevDetail = useRef<string | null>(null);
+  const prevOpenId = useRef<string | null>(null);
+  const lastHandledSerial = useRef<number | null>(null);
 
   useEffect(() => {
     if (detailPointId) {
-      const p = points.find((x) => x.id === detailPointId);
+      if (lastHandledSerial.current === selectionSerial) {
+        return;
+      }
+      const p = lookupPoints.find((x) => x.id === detailPointId);
       if (p) {
         flyToNeighborhood(map, p.latitude, p.longitude);
+        lastHandledSerial.current = selectionSerial;
+        prevOpenId.current = detailPointId;
       }
-      prevDetail.current = detailPointId;
       return;
     }
 
-    if (prevDetail.current) {
+    if (prevOpenId.current) {
       applyPointsBounds(map, points);
-      prevDetail.current = null;
     }
-  }, [detailPointId, points, map]);
+    prevOpenId.current = null;
+    lastHandledSerial.current = null;
+  }, [detailPointId, map, lookupPoints, points, selectionSerial]);
 
   return null;
 }

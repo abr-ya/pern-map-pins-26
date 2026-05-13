@@ -5,7 +5,7 @@ const mineColors = { fillUi: '#22c55e', strokeUi: '#15803d' };
 
 function pinHtml(pointId: string, variant: 'guest' | 'mine') {
   const c = variant === 'guest' ? guestColors : mineColors;
-  return `<div data-testid="map-pin" data-point-id="${pointId}" style="width:12px;height:12px;border-radius:9999px;background:${c.fillUi};border:2px solid ${c.strokeUi};box-sizing:border-box" aria-hidden="true"></div>`;
+  return `<div data-testid="map-pin" data-point-id="${pointId}" style="width:12px;height:12px;border-radius:9999px;background:${c.fillUi};border:2px solid ${c.strokeUi};box-sizing:border-box;cursor:pointer" aria-hidden="true"></div>`;
 }
 
 export function makeGuestPinIcon(pointId: string): L.DivIcon {
