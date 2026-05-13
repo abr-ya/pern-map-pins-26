@@ -121,7 +121,7 @@ describe('PointDetailPanel (signed-in, T068)', () => {
     vi.clearAllMocks();
     authState.isSignedIn = true;
     authState.token = 'jwt_test';
-    apiGetJsonFn.mockImplementation((path: string, _token: string | null) => defaultApiGet(path));
+    apiGetJsonFn.mockImplementation((path: string) => defaultApiGet(path));
     apiPostJsonFn.mockResolvedValue({
       id: '00000000-0000-4000-8000-000000000099',
       body: 'Hi',

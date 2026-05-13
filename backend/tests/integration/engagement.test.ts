@@ -1,21 +1,21 @@
 import request from 'supertest';
 import type { NextFunction } from 'express';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PointVisibility } from '../../src/generated/prisma/enums.js';
 import { favoriteJsonSchema } from '../../src/lib/schemas/favorite.js';
 import { makePoint } from '../mocks/pointFactory.js';
 
 const CLERK_USER_ID = 'user_smoke_engagement';
 
 const getAuthMock = vi.hoisted(() =>
-  vi.fn(() => ({ userId: CLERK_USER_ID as string | undefined })),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  vi.fn((_req: unknown) => ({ userId: CLERK_USER_ID as string | undefined })),
 );
 
 vi.mock('@clerk/express', () => ({
   clerkMiddleware:
     () => (_req: unknown, _res: unknown, next: NextFunction) => next(),
-  getAuth: (...args: unknown[]) =>
-    getAuthMock(...args) as ReturnType<(typeof import('@clerk/express'))['getAuth']>,
+  getAuth: (req: unknown) =>
+    getAuthMock(req) as ReturnType<(typeof import('@clerk/express'))['getAuth']>,
 }));
 
 vi.mock('../../src/lib/prisma.js', () => ({
@@ -51,6 +51,26 @@ const localUserId = '00000000-0000-4000-8000-000000000099';
 const folderIdA = '00000000-0000-4000-8000-0000000000a1';
 const folderIdB = '00000000-0000-4000-8000-0000000000a2';
 
+const prismaUserRow = {
+  id: localUserId,
+  clerkId: 'clerk_engagement_test',
+  displayName: 'Engagement Test',
+  createdAt: new Date('2020-01-01T00:00:00.000Z'),
+};
+
+function favoriteFolderRow(id: string) {
+  return {
+    id,
+    userId: localUserId,
+    name: 'Test folder',
+    parentId: null as string | null,
+  };
+}
+
+function favoriteRow(folderId: string | null) {
+  return { userId: localUserId, pointId, favoriteFolderId: folderId };
+}
+
 function stubClerkEnv() {
   vi.stubEnv('CLERK_SECRET_KEY', 'sk_test_dummy_for_unit_tests');
   vi.stubEnv(
@@ -62,7 +82,7 @@ function stubClerkEnv() {
 describe('Engagement APIs require auth when unauthenticated (T067)', () => {
   beforeEach(() => {
     stubClerkEnv();
-    getAuthMock.mockImplementation(() => ({}));
+    getAuthMock.mockImplementation(() => ({ userId: undefined }));
   });
 
   afterEach(() => {
@@ -139,7 +159,7 @@ describe('Engagement APIs — favorites with auth (T067)', () => {
   });
 
   function mockReadableWorldPublicPoint() {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: localUserId });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(prismaUserRow);
     vi.mocked(prisma.userPreference.findUnique).mockResolvedValue(null);
     vi.mocked(prisma.point.findUnique).mockResolvedValue(
       makePoint({ id: pointId, userId: localUserId }),
@@ -148,15 +168,13 @@ describe('Engagement APIs — favorites with auth (T067)', () => {
 
   it('POST /api/favorites adds favorite into a folder', async () => {
     mockReadableWorldPublicPoint();
-    vi.mocked(prisma.favoriteFolder.findFirst).mockResolvedValue({ id: folderIdA });
+    vi.mocked(prisma.favoriteFolder.findFirst).mockResolvedValue(
+      favoriteFolderRow(folderIdA),
+    );
 
-    vi.mocked(prisma.favorite.upsert).mockResolvedValue({
-      userId: localUserId,
-      pointId,
-      favoriteFolderId: folderIdA,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    vi.mocked(prisma.favorite.upsert).mockResolvedValue(
+      favoriteRow(folderIdA),
+    );
 
     const res = await request(createApp())
       .post('/api/favorites')
@@ -186,22 +204,16 @@ describe('Engagement APIs — favorites with auth (T067)', () => {
   });
 
   it('PATCH /api/favorites/:pointId moves favorite to another folder', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: localUserId });
-    vi.mocked(prisma.favoriteFolder.findFirst).mockResolvedValue({ id: folderIdB });
-    vi.mocked(prisma.favorite.findUnique).mockResolvedValue({
-      userId: localUserId,
-      pointId,
-      favoriteFolderId: folderIdA,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    vi.mocked(prisma.favorite.update).mockResolvedValue({
-      userId: localUserId,
-      pointId,
-      favoriteFolderId: folderIdB,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(prismaUserRow);
+    vi.mocked(prisma.favoriteFolder.findFirst).mockResolvedValue(
+      favoriteFolderRow(folderIdB),
+    );
+    vi.mocked(prisma.favorite.findUnique).mockResolvedValue(
+      favoriteRow(folderIdA),
+    );
+    vi.mocked(prisma.favorite.update).mockResolvedValue(
+      favoriteRow(folderIdB),
+    );
 
     const res = await request(createApp())
       .patch(`/api/favorites/${pointId}`)
@@ -221,8 +233,10 @@ describe('Engagement APIs — favorites with auth (T067)', () => {
   });
 
   it('PATCH /api/favorites/:pointId returns 404 when favorite does not exist', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: localUserId });
-    vi.mocked(prisma.favoriteFolder.findFirst).mockResolvedValue({ id: folderIdB });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(prismaUserRow);
+    vi.mocked(prisma.favoriteFolder.findFirst).mockResolvedValue(
+      favoriteFolderRow(folderIdB),
+    );
     vi.mocked(prisma.favorite.findUnique).mockResolvedValue(null);
 
     const res = await request(createApp())
@@ -235,10 +249,10 @@ describe('Engagement APIs — favorites with auth (T067)', () => {
   });
 
   it('DELETE /api/favorites/:pointId removes favorite', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: localUserId });
-    vi.mocked(prisma.favorite.findUnique).mockResolvedValue({
-      pointId,
-    });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(prismaUserRow);
+    vi.mocked(prisma.favorite.findUnique).mockResolvedValue(
+      favoriteRow(folderIdA),
+    );
     vi.mocked(prisma.favorite.delete).mockResolvedValue(undefined as never);
 
     const res = await request(createApp()).delete(`/api/favorites/${pointId}`);
@@ -250,7 +264,7 @@ describe('Engagement APIs — favorites with auth (T067)', () => {
   });
 
   it('DELETE /api/favorites/:pointId returns 404 when not favorited', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: localUserId });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(prismaUserRow);
     vi.mocked(prisma.favorite.findUnique).mockResolvedValue(null);
 
     const res = await request(createApp()).delete(`/api/favorites/${pointId}`);
