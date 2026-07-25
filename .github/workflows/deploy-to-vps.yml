@@ -122,7 +122,12 @@ jobs:
             pnpm --filter backend exec prisma migrate deploy
             if [ -n "${RESTART_COMMAND:-}" ]; then
               if ! command -v pm2 >/dev/null 2>&1; then
-                echo "✖ pm2 not found on PATH (install e.g. npm i -g pm2 for this Node)." >&2
+                echo "⚙ pm2 not found on PATH; installing it globally for $(node -v)."
+                npm i -g pm2
+                hash -r
+              fi
+              if ! command -v pm2 >/dev/null 2>&1; then
+                echo "✖ pm2 is still not available after npm i -g pm2." >&2
                 exit 1
               fi
               echo "🔧 pm2 $(pm2 -v)"
